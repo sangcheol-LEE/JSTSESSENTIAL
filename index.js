@@ -1,19 +1,17 @@
+let ajax = new XMLHttpRequest();
 const ROOT = document.querySelector("#root");
-const ulTag = document.createElement("ul");
 const content = document.createElement("div");
 
 const NEWS_URL = "https://api.hnpwa.com/v0/news/1.json";
 const CONTENT_URL = `https://api.hnpwa.com/v0/item/@hash.json`
 
 const getData = (URL) => {
-   let ajax = new XMLHttpRequest();
    ajax.open("GET", URL, false);
    ajax.send();
-   const ret = JSON.parse(ajax.response)
-   return ret
+   return JSON.parse(ajax.response)
 };
 
-const data = getData(NEWS_URL);
+const newsFeed = getData(NEWS_URL);
 
 
 window.addEventListener("hashchange", () => {
@@ -27,16 +25,18 @@ window.addEventListener("hashchange", () => {
    content.appendChild(heading)
 });
 
+const ulTag = document.createElement("ul");
+for(let i = 0; i < newsFeed.length; i++) {
+   const div = document.createElement("div");
 
-for(let i = 0; i < data.length; i++) {
-   const liTag = document.createElement("li");
-   const aTag = document.createElement("a");
-   liTag.appendChild(aTag);
+   div.innerHTML = `
+   <li >
+      <a href="#${newsFeed[i].id}">
+         ${newsFeed[i].title} (${newsFeed[i].comments_count})
+      </a>
+   </li>`
 
-   aTag.href = `#${data[i].id}`;
-   aTag.innerHTML = `${data[i].title} (${data[i].comments_count})`
-
-   ulTag.appendChild(liTag);
+   ulTag.appendChild(div.firstElementChild)
 }
 
 ROOT.appendChild(ulTag);
