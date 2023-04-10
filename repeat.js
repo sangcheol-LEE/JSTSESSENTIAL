@@ -12,12 +12,12 @@ const getData = (url) => {
 }
 
 const NEWS_FEED = getData(NEWS_URL);
-ROOT.appendChild(UL)
 
-window.addEventListener("hashchange", () => {
+
+
+const detailFeed = () => {
    const locate = location?.hash?.substring(1);
    const ret = getData(CONTENT_URL.replace("@hash",locate));
-   const title = document.createElement("h1");
 
    ROOT.innerHTML = `
       <h1>${ret.title}</h1>
@@ -25,24 +25,33 @@ window.addEventListener("hashchange", () => {
          <a href="#">목록으로</a>
       </div>
    `
-})
-
-const newsList = [];
-
-newsList.push("<ul>");
-
-for(let i = 0; i < NEWS_FEED.length; i++) {
-   newsList.push(`
-      <li>
-         <a href="#${NEWS_FEED[i].id}">
-            ${NEWS_FEED[i].title} (${NEWS_FEED[i].comments_count})
-         </a>
-      </li>
-   `)
 }
 
-newsList.push("</ul>");
+const totalFeed = () => {
+   const newsList = [];
+   newsList.push("<ul>");
+   for(let i = 0; i < NEWS_FEED.length; i++) {
+      newsList.push(`
+         <li>
+            <a href="#${NEWS_FEED[i].id}">
+               ${NEWS_FEED[i].title} (${NEWS_FEED[i].comments_count})
+            </a>
+         </li>
+      `)
+   }
+   newsList.push("</ul>");
+   const ret = newsList.join();
+   ROOT.innerHTML = ret
+}
 
-const ret = newsList.join();
-console.log(ret)
-ROOT.innerHTML = ret
+const router = () => {
+   const routePath = location.hash;
+   if(routePath === "") {
+      totalFeed();
+   }else {
+      detailFeed();
+   }
+}
+window.addEventListener("hashchange", router)
+router();
+
