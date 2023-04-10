@@ -128,24 +128,34 @@ var getData = function getData(URL) {
   ajax.send();
   return JSON.parse(ajax.response);
 };
-var newsFeed = getData(NEWS_URL);
-window.addEventListener("hashchange", function () {
-  console.log("hash changed....");
+var getNewsFeed = function getNewsFeed() {
+  var newsFeed = getData(NEWS_URL);
+  var news_list = [];
+  news_list.push("<ul>");
+  for (var i = 0; i < newsFeed.length; i++) {
+    news_list.push("\n         <li>\n            <a href=\"#".concat(newsFeed[i].id, "\">").concat(newsFeed[i].title, "</a>\n         </li>\n      "));
+  }
+  news_list.push("</ul>");
+  var ret = news_list.join("");
+  ROOT.innerHTML = ret;
+};
+var newsDetail = function newsDetail() {
   var heading = document.createElement("h1");
   var hash = location.hash.substring(1);
   var getUrl = CONTENT_URL.replace("@hash", hash);
   var title = getData(getUrl).title;
-  heading.innerHTML = title;
-  content.appendChild(heading);
-});
-var ulTag = document.createElement("ul");
-for (var i = 0; i < newsFeed.length; i++) {
-  var div = document.createElement("div");
-  div.innerHTML = "\n   <li >\n      <a href=\"#".concat(newsFeed[i].id, "\">\n         ").concat(newsFeed[i].title, " (").concat(newsFeed[i].comments_count, ")\n      </a>\n   </li>");
-  ulTag.appendChild(div.firstElementChild);
-}
-ROOT.appendChild(ulTag);
-ROOT.appendChild(content);
+  ROOT.innerHTML = "\n         <h1>".concat(title, "</h1>\n         <div>\n            <a href=\"#\">\uBAA9\uB85D\uC73C\uB85C</a>\n         </div>\n   ");
+};
+var router = function router() {
+  var routePath = location.hash;
+  if (routePath === "") {
+    getNewsFeed();
+  } else {
+    newsDetail();
+  }
+};
+window.addEventListener("hashchange", router);
+router();
 },{}],"../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -171,7 +181,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "50495" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49707" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];

@@ -11,33 +11,49 @@ const getData = (URL) => {
    return JSON.parse(ajax.response)
 };
 
-const newsFeed = getData(NEWS_URL);
+const getNewsFeed = () => {
+   const newsFeed = getData(NEWS_URL);
+   const news_list = [];
+   news_list.push("<ul>");
+   for(let i = 0; i < newsFeed.length; i++) {
+      news_list.push(`
+         <li>
+            <a href="#${newsFeed[i].id}">${newsFeed[i].title}</a>
+         </li>
+      `)
+   }
 
+   news_list.push("</ul>");
+   const ret = news_list.join("") ;
 
-window.addEventListener("hashchange", () => {
-   console.log("hash changed....");
+   ROOT.innerHTML = ret;
+}
+
+const newsDetail = () => {
    const heading = document.createElement("h1");
    const hash = location.hash.substring(1);
    const getUrl = CONTENT_URL.replace("@hash", hash);
    const title = getData(getUrl).title;
 
-   heading.innerHTML = title;
-   content.appendChild(heading)
-});
-
-const ulTag = document.createElement("ul");
-for(let i = 0; i < newsFeed.length; i++) {
-   const div = document.createElement("div");
-
-   div.innerHTML = `
-   <li >
-      <a href="#${newsFeed[i].id}">
-         ${newsFeed[i].title} (${newsFeed[i].comments_count})
-      </a>
-   </li>`
-
-   ulTag.appendChild(div.firstElementChild)
+   ROOT.innerHTML = `
+         <h1>${title}</h1>
+         <div>
+            <a href="#">목록으로</a>
+         </div>
+   `;
 }
 
-ROOT.appendChild(ulTag);
-ROOT.appendChild(content);
+const router = () => {
+   const routePath = location.hash;
+
+   if(routePath === "") {
+      getNewsFeed();
+   }else {
+      newsDetail()
+   }
+}
+
+
+window.addEventListener("hashchange",router );
+
+router()
