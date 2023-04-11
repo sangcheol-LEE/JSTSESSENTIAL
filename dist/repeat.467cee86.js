@@ -121,7 +121,9 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 var NEWS_URL = "https://api.hnpwa.com/v0/news/1.json";
 var CONTENT_URL = "https://api.hnpwa.com/v0/item/@hash.json";
 var ROOT = document.getElementById("root");
-var UL = document.createElement("ul");
+var store = {
+  currentPage: 1
+};
 var getData = function getData(url) {
   var ajax = new XMLHttpRequest();
   ajax.open("GET", url, false);
@@ -131,23 +133,33 @@ var getData = function getData(url) {
 var NEWS_FEED = getData(NEWS_URL);
 var detailFeed = function detailFeed() {
   var _location, _location$hash;
-  var locate = (_location = location) === null || _location === void 0 ? void 0 : (_location$hash = _location.hash) === null || _location$hash === void 0 ? void 0 : _location$hash.substring(1);
+  var locate = (_location = location) === null || _location === void 0 ? void 0 : (_location$hash = _location.hash) === null || _location$hash === void 0 ? void 0 : _location$hash.substring(7);
+  console.log(locate, "asdasd");
   var ret = getData(CONTENT_URL.replace("@hash", locate));
-  ROOT.innerHTML = "\n      <h1>".concat(ret.title, "</h1>\n      <div>\n         <a href=\"#\">\uBAA9\uB85D\uC73C\uB85C</a>\n      </div>\n   ");
+  ROOT.innerHTML = "\n      <h1>".concat(ret.title, "</h1>\n      <div>\n         <a href=\"#/page/").concat(store.currentPage, "\">\uBAA9\uB85D\uC73C\uB85C</a>\n      </div>\n   ");
 };
 var totalFeed = function totalFeed() {
   var newsList = [];
-  newsList.push("<ul>");
-  for (var i = 0; i < NEWS_FEED.length; i++) {
-    newsList.push("\n         <li>\n            <a href=\"#".concat(NEWS_FEED[i].id, "\">\n               ").concat(NEWS_FEED[i].title, " (").concat(NEWS_FEED[i].comments_count, ")\n            </a>\n         </li>\n      "));
-  }
+  var minPage = store.currentPage > 1 ? store.currentPage - 1 : 1;
+  var maxPage = store.currentPage * 10 === NEWS_FEED.length ? store.currentPage * 10 / 10 : store.currentPage + 1;
   newsList.push("</ul>");
-  var ret = newsList.join();
+  newsList.push('<ul>');
+  for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
+    newsList.push("\n         <li>\n            <a href=\"#/show/".concat(NEWS_FEED[i].id, "\">\n               ").concat(NEWS_FEED[i].title, " (").concat(NEWS_FEED[i].comments_count, ")\n            </a>\n         </li>\n      "));
+  }
+  ;
+  newsList.push("\n      <div>\n         <a href=\"#/page/".concat(minPage, "\">\uC774\uC804 \uD398\uC774\uC9C0</a>\n         <a href=\"#/page/").concat(maxPage, "\">\uB2E4\uC74C \uD398\uC774\uC9C0</a>\n      </div>\n   "));
+  var ret = newsList.join("");
   ROOT.innerHTML = ret;
 };
 var router = function router() {
   var routePath = location.hash;
+  console.log("goood....", routePath.indexOf("#/page/"));
+  console.log("router", routePath);
   if (routePath === "") {
+    totalFeed();
+  } else if (routePath.indexOf("#/page/") >= 0) {
+    store.currentPage = Number(routePath.substring(7));
     totalFeed();
   } else {
     detailFeed();
@@ -180,7 +192,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49707" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49178" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];

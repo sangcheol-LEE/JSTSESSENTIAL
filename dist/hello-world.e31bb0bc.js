@@ -123,6 +123,9 @@ var ROOT = document.querySelector("#root");
 var content = document.createElement("div");
 var NEWS_URL = "https://api.hnpwa.com/v0/news/1.json";
 var CONTENT_URL = "https://api.hnpwa.com/v0/item/@hash.json";
+var store = {
+  currentPage: 1
+};
 var getData = function getData(URL) {
   ajax.open("GET", URL, false);
   ajax.send();
@@ -132,23 +135,30 @@ var getNewsFeed = function getNewsFeed() {
   var newsFeed = getData(NEWS_URL);
   var news_list = [];
   news_list.push("<ul>");
-  for (var i = 0; i < newsFeed.length; i++) {
-    news_list.push("\n         <li>\n            <a href=\"#".concat(newsFeed[i].id, "\">").concat(newsFeed[i].title, "</a>\n         </li>\n      "));
+  for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
+    news_list.push("\n         <li>\n            <a href=\"#/show/".concat(newsFeed[i].id, "\">").concat(newsFeed[i].title, " (").concat(newsFeed[i].comments_count, ")</a>\n         </li>\n      "));
   }
+  var lastIndex = newsFeed.length === store.currentPage * 10;
+  console.log();
   news_list.push("</ul>");
+  news_list.push("\n      <div>\n         <a href=\"#/page/".concat(store.currentPage > 1 ? store.currentPage - 1 : 1, "\">\uC774\uC804 \uD398\uC774\uC9C0</a>\n         <a href=\"#/page/").concat(lastIndex ? store.currentPage * 10 / 10 : store.currentPage + 1, "\">\uB2E4\uC74C \uD398\uC774\uC9C0</a>\n      </div>\n   "));
   var ret = news_list.join("");
   ROOT.innerHTML = ret;
 };
 var newsDetail = function newsDetail() {
-  var heading = document.createElement("h1");
-  var hash = location.hash.substring(1);
+  var hash = location.hash.substring(7);
   var getUrl = CONTENT_URL.replace("@hash", hash);
   var title = getData(getUrl).title;
-  ROOT.innerHTML = "\n         <h1>".concat(title, "</h1>\n         <div>\n            <a href=\"#\">\uBAA9\uB85D\uC73C\uB85C</a>\n         </div>\n   ");
+  ROOT.innerHTML = "\n         <h1>".concat(title, "</h1>\n         <div>\n            <a href=\"#/page/").concat(store.currentPage, "\">\uBAA9\uB85D\uC73C\uB85C</a>\n         </div>\n   ");
 };
 var router = function router() {
-  var routePath = location.hash;
+  var _location;
+  var routePath = (_location = location) === null || _location === void 0 ? void 0 : _location.hash;
+  console.log("good", routePath.substring(7));
   if (routePath === "") {
+    getNewsFeed();
+  } else if (routePath.indexOf("#/page/") >= 0) {
+    store.currentPage = parseInt(routePath.substring(7));
     getNewsFeed();
   } else {
     newsDetail();
@@ -181,7 +191,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49707" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49178" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
