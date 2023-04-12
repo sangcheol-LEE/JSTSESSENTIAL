@@ -3,10 +3,11 @@ const ROOT = document.querySelector("#root");
 const content = document.createElement("div");
 
 const NEWS_URL = "https://api.hnpwa.com/v0/news/1.json";
-const CONTENT_URL = `https://api.hnpwa.com/v0/item/@hash.json`
+const CONTENT_URL = `https://api.hnpwa.com/v0/item/@hash.json`;
 
 const store = {
-   currentPage : 1
+   currentPage : 1,
+   feeds : [],
 };
 
 const getData = (URL) => {
@@ -15,9 +16,16 @@ const getData = (URL) => {
    return JSON.parse(ajax.response)
 };
 
-const newsFeed = getData(NEWS_URL);
+const makeFeed = (feeds) => {
+   const newFeed = [...feeds].map((item) => {
+      item.isRead = false
+      return item
+   })
+   return newFeed
+}
+
 const getNewsFeed = () => {
-   const newsFeed = getData(NEWS_URL);
+   let newsFeed = store.feeds;
    const news_list = [];
 
    let template = `
@@ -45,10 +53,14 @@ const getNewsFeed = () => {
       </div>
    `;
 
+   if(newsFeed.length === 0) {
+      newsFeed = store.feeds = makeFeed(getData(NEWS_URL));
+   }
+
 
    for(let i = (store.currentPage - 1 ) * 10; i < store.currentPage * 10; i++) {
       news_list.push(`
-         <div class="p-6 bg-white mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100">
+         <div class="p-6 ${newsFeed[i].isRead ? "bg-slate-400" : "bg-white"} mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100">
             <div class="flex">
                <div class="flex-auto">
                   <a href="#/show/${newsFeed[i].id}">${newsFeed[i].title}</a>
@@ -82,7 +94,7 @@ const getNewsFeed = () => {
 }
 
 const newsDetail = () => {
-   const hash = location.hash.substring(7);
+   const hash = location.hash.substring(7); //id
    const getUrl = CONTENT_URL.replace("@hash", hash);
    const newsContent= getData(getUrl);
    let template = `
@@ -110,6 +122,16 @@ const newsDetail = () => {
          </div>
       </div>
    `;
+
+   for(let i = 0; i < store.feeds.length; i++) {
+      console.log(store.feeds[i].id)
+      console.log("hash",hash)
+      if(store.feeds[i].id === Number(hash)) {
+         store.feeds[i].isRead = true;
+         break;
+      }
+   }
+
    const makeComment = (comments, called = 0) => {
       const commentString = [];
 

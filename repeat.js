@@ -4,6 +4,7 @@ const ROOT = document.getElementById("root");
 
 const store = {
    currentPage : 1,
+   feeds:[],
 }
 
 
@@ -15,13 +16,25 @@ const getData = (url) => {
    return JSON.parse(ajax.response)
 }
 
+const makeNewData = (feeds) => {
+   const ret = feeds.map((item) => {
+      item.isRead = false;
+      return item
+   })
+   return ret
+}
 
 
 const detailFeed = () => {
    const locate = location?.hash?.substring(7);
    const ret = getData(CONTENT_URL.replace("@hash",locate));
 
-   console.log("ret.....",ret)
+   for(let i = 0; i < store.feeds.length; i++) {
+      if(store.feeds[i].id === Number(locate)) {
+         store.feeds[i].isRead = true;
+      }
+   }
+
    let template = `
       <div>
          <div class="flex items-center justify-between px-4 py-7 bg-white">
@@ -38,7 +51,10 @@ const detailFeed = () => {
          </div>
       </div>
    `
-   const getComment = (comment,called = 0) => {
+
+
+
+   const getComment =(comment,called = 0) => {
       const commentStr = [];
 
       for(let i = 0; i < comment.length; i++) {
@@ -63,7 +79,9 @@ const detailFeed = () => {
 }
 
 const totalFeed = () => {
-   const NEWS_FEED = getData(NEWS_URL);
+   // const NEWS_FEED = getData(NEWS_URL);
+   let NEWS_FEED = store.feeds;
+
    const newsList = [];
 
    const minPage = store.currentPage > 1 ? store.currentPage - 1 : 1;
@@ -85,12 +103,18 @@ const totalFeed = () => {
          </div>
 
       </div>
-
    `;
+
+   if(NEWS_FEED.length === 0) {
+      NEWS_FEED = store.feeds = makeNewData(getData(NEWS_URL));
+   }
+
+   console.log(NEWS_FEED)
+
 
    for(let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
       newsList.push(`
-         <div  class="px-5 py-5 rounded-xl mb-7 bg-slate-100">
+         <div  class="px-5 py-5 rounded-xl mb-7 ${NEWS_FEED[i].isRead ? "bg-lime-300" : "bg-slate-200"} hover:bg-lime-700">
             <div class="flex items-center justify-between">
                <li>
                   <a href="#/show/${NEWS_FEED[i].id}" class="font-bold text-2xl"> ${NEWS_FEED[i].title}</a>

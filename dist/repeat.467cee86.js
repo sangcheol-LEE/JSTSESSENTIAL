@@ -122,7 +122,8 @@ var NEWS_URL = "https://api.hnpwa.com/v0/news/1.json";
 var CONTENT_URL = "https://api.hnpwa.com/v0/item/@hash.json";
 var ROOT = document.getElementById("root");
 var store = {
-  currentPage: 1
+  currentPage: 1,
+  feeds: []
 };
 var getData = function getData(url) {
   var ajax = new XMLHttpRequest();
@@ -130,19 +131,30 @@ var getData = function getData(url) {
   ajax.send();
   return JSON.parse(ajax.response);
 };
+var makeNewData = function makeNewData(feeds) {
+  var ret = feeds.map(function (item) {
+    item.isRead = false;
+    return item;
+  });
+  return ret;
+};
 var detailFeed = function detailFeed() {
   var _location, _location$hash;
   var locate = (_location = location) === null || _location === void 0 ? void 0 : (_location$hash = _location.hash) === null || _location$hash === void 0 ? void 0 : _location$hash.substring(7);
   var ret = getData(CONTENT_URL.replace("@hash", locate));
-  console.log("ret.....", ret);
+  for (var i = 0; i < store.feeds.length; i++) {
+    if (store.feeds[i].id === Number(locate)) {
+      store.feeds[i].isRead = true;
+    }
+  }
   var template = "\n      <div>\n         <div class=\"flex items-center justify-between px-4 py-7 bg-white\">\n            <h1 class=\"text-3xl font-bold\">Ian's Post</h1>\n            <div class=\"text-2xl flex items-center\">\n               <a href=\"#/page/".concat(store.currentPage, "\" class=\"mr-5\">X</a>\n            </div>\n         </div>\n         <div class=\"p-7 bg-gray-700 h-screen\" style=\"height:100%\">\n            <div class=\"px-5 py-5 rounded-xl mb-7 bg-slate-100\">\n               <h1 class=\"font-bold text-2xl mb-5\">").concat(ret.title, "</h1>\n               {{comments}}\n            </div>\n         </div>\n      </div>\n   ");
   var getComment = function getComment(comment) {
     var called = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : 0;
     var commentStr = [];
-    for (var i = 0; i < comment.length; i++) {
-      commentStr.push("\n            <div class=\"mt-4\" style=\"padding-left: ".concat(called * 40, "px;\">\n               <div class=\"text-gray-500\">\n                  <i class=\"fa fa-sort-up mr-2\"></i>\n                  <strong>").concat(comment[i].user, "</strong> ").concat(comment[i].time_ago, "\n               </div>\n               <p>").concat(comment[i].content, "</p>\n            </div>\n         "));
-      if (comment[i].comments.length > 0) {
-        commentStr.push(getComment(comment[i].comments, called + 1));
+    for (var _i = 0; _i < comment.length; _i++) {
+      commentStr.push("\n            <div class=\"mt-4\" style=\"padding-left: ".concat(called * 40, "px;\">\n               <div class=\"text-gray-500\">\n                  <i class=\"fa fa-sort-up mr-2\"></i>\n                  <strong>").concat(comment[_i].user, "</strong> ").concat(comment[_i].time_ago, "\n               </div>\n               <p>").concat(comment[_i].content, "</p>\n            </div>\n         "));
+      if (comment[_i].comments.length > 0) {
+        commentStr.push(getComment(comment[_i].comments, called + 1));
       }
     }
     return commentStr.join("");
@@ -150,13 +162,18 @@ var detailFeed = function detailFeed() {
   ROOT.innerHTML = template.replace("{{comments}}", getComment(ret.comments));
 };
 var totalFeed = function totalFeed() {
-  var NEWS_FEED = getData(NEWS_URL);
+  // const NEWS_FEED = getData(NEWS_URL);
+  var NEWS_FEED = store.feeds;
   var newsList = [];
   var minPage = store.currentPage > 1 ? store.currentPage - 1 : 1;
   var maxPage = store.currentPage * 10 === NEWS_FEED.length ? store.currentPage * 10 / 10 : store.currentPage + 1;
-  var template = "\n      <div>\n         <div class=\"flex items-center justify-between px-4 py-7 bg-white\">\n            <h1 class=\"text-3xl font-bold\">Ian's Post</h1>\n            <div class=\"text-2xl flex items-center\">\n               <a href=\"#/page/{{__prev__}}\" class=\"mr-5\">Prev Page</a>\n               <a href=\"#/page/{{__next__}}\">Next Page</a>\n            </div>\n         </div>\n         <div class=\"p-7 bg-gray-700\">\n            <ul>\n               {{__FEED__}}\n            </ul>\n         </div>\n\n      </div>\n\n   ";
+  var template = "\n      <div>\n         <div class=\"flex items-center justify-between px-4 py-7 bg-white\">\n            <h1 class=\"text-3xl font-bold\">Ian's Post</h1>\n            <div class=\"text-2xl flex items-center\">\n               <a href=\"#/page/{{__prev__}}\" class=\"mr-5\">Prev Page</a>\n               <a href=\"#/page/{{__next__}}\">Next Page</a>\n            </div>\n         </div>\n         <div class=\"p-7 bg-gray-700\">\n            <ul>\n               {{__FEED__}}\n            </ul>\n         </div>\n\n      </div>\n   ";
+  if (NEWS_FEED.length === 0) {
+    NEWS_FEED = store.feeds = makeNewData(getData(NEWS_URL));
+  }
+  console.log(NEWS_FEED);
   for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
-    newsList.push("\n         <div  class=\"px-5 py-5 rounded-xl mb-7 bg-slate-100\">\n            <div class=\"flex items-center justify-between\">\n               <li>\n                  <a href=\"#/show/".concat(NEWS_FEED[i].id, "\" class=\"font-bold text-2xl\"> ").concat(NEWS_FEED[i].title, "</a>\n               </li>\n               <div class=\"flex items-center justify-center w-10 h-10 bg-lime-300 rounded-xl text-white \">").concat(NEWS_FEED[i].comments_count, "</div>\n            </div>\n\n            <div class=\"flex mt-3\">\n               <div><i class=\"fas fa-user mr-1\"></i>").concat(NEWS_FEED[i].user, "</div>\n               <div class=\"mx-3\"><i class=\"fas fa-heart mr-1\"></i>").concat(NEWS_FEED[i].points, "</div>\n               <div><i class=\"fas fa-clock mr-1\"></i>").concat(NEWS_FEED[i].time_ago, "</div>\n            </div>\n         </div>\n\n      "));
+    newsList.push("\n         <div  class=\"px-5 py-5 rounded-xl mb-7 ".concat(NEWS_FEED[i].isRead ? "bg-lime-300" : "bg-slate-200", " hover:bg-lime-700\">\n            <div class=\"flex items-center justify-between\">\n               <li>\n                  <a href=\"#/show/").concat(NEWS_FEED[i].id, "\" class=\"font-bold text-2xl\"> ").concat(NEWS_FEED[i].title, "</a>\n               </li>\n               <div class=\"flex items-center justify-center w-10 h-10 bg-lime-300 rounded-xl text-white \">").concat(NEWS_FEED[i].comments_count, "</div>\n            </div>\n\n            <div class=\"flex mt-3\">\n               <div><i class=\"fas fa-user mr-1\"></i>").concat(NEWS_FEED[i].user, "</div>\n               <div class=\"mx-3\"><i class=\"fas fa-heart mr-1\"></i>").concat(NEWS_FEED[i].points, "</div>\n               <div><i class=\"fas fa-clock mr-1\"></i>").concat(NEWS_FEED[i].time_ago, "</div>\n            </div>\n         </div>\n\n      "));
   }
   ;
   template = template.replace("{{__FEED__}}", newsList.join(""));
@@ -202,7 +219,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59887" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "61791" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
