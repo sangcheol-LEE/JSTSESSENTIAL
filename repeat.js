@@ -15,7 +15,6 @@ const getData = (url) => {
    return JSON.parse(ajax.response)
 }
 
-const NEWS_FEED = getData(NEWS_URL);
 
 
 const detailFeed = () => {
@@ -32,12 +31,27 @@ const detailFeed = () => {
 }
 
 const totalFeed = () => {
+   const NEWS_FEED = getData(NEWS_URL);
    const newsList = [];
+
    const minPage = store.currentPage > 1 ? store.currentPage - 1 : 1;
    const maxPage = store.currentPage * 10 === NEWS_FEED.length ? store.currentPage * 10 / 10 : store.currentPage + 1;
 
-   newsList.push(`</ul>`);
-   newsList.push('<ul>');
+   let template = `
+      <div class="container mx-4 p-5">
+         <h1 class="text-5xl mb-4 font-bold">Ian's Post</h1>
+
+         <ul>
+            {{__FEED__}}
+         </ul>
+
+         <div>
+            <a href="#/page/{{__prev__}}">이전 페이지</a>
+            <a href="#/page/{{__next__}}">다음 페이지</a>
+         </div>
+      </div>
+   `;
+
    for(let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
       newsList.push(`
          <li>
@@ -48,20 +62,15 @@ const totalFeed = () => {
       `)
    };
 
-   newsList.push(`
-      <div>
-         <a href="#/page/${minPage}">이전 페이지</a>
-         <a href="#/page/${maxPage}">다음 페이지</a>
-      </div>
-   `);
-   const ret = newsList.join("");
-   ROOT.innerHTML = ret;
+   template = template.replace("{{__FEED__}}", newsList.join(""));
+   template = template.replace("{{__prev__}}", minPage);
+   template = template.replace("{{__next__}}",maxPage);
+
+   ROOT.innerHTML = template;
 };
 
 const router = () => {
    const routePath = location.hash;
-   console.log("goood....",routePath.indexOf("#/page/"))
-   console.log("router",routePath)
    if(routePath === "") {
       totalFeed();
    }else if(routePath.indexOf("#/page/") >= 0){
