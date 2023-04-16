@@ -1,3 +1,4 @@
+import { GetData } from "./RepeatType";
 import { Store, NewsFeed, NewsDetail, NewsComment } from "./Types";
 
 let ajax: XMLHttpRequest = new XMLHttpRequest();
@@ -26,6 +27,25 @@ class Api {
     this.url = url;
     this.ajax = new XMLHttpRequest();
   }
+
+  protected getRequest<AjaxResponse>(): AjaxResponse {
+    this.ajax.open("GET", this.url, false);
+    this.ajax.send();
+
+    return JSON.parse(this.ajax.response);
+  }
+}
+
+class newsFeedApi extends Api {
+  getData(): NewsFeed[] {
+    return this.getRequest<NewsFeed[]>();
+  }
+}
+
+class newsDetailApi extends Api {
+  getData(): NewsDetail {
+    return this.getRequest<NewsDetail>();
+  }
 }
 
 const makeFeed = (feeds: NewsFeed[]) => {
@@ -45,6 +65,7 @@ const updateView = (html: string): void => {
 };
 
 const getNewsFeed = (): void => {
+  const api = new newsFeedApi(NEWS_URL);
   let newsFeed: NewsFeed[] = store.feeds;
   const news_list = [];
 
@@ -74,7 +95,7 @@ const getNewsFeed = (): void => {
    `;
 
   if (newsFeed.length === 0) {
-    newsFeed = store.feeds = makeFeed(getData<NewsFeed[]>(NEWS_URL));
+    newsFeed = store.feeds = makeFeed(api.getData());
   }
 
   for (let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
@@ -123,8 +144,9 @@ const getNewsFeed = (): void => {
 
 const newsDetail = () => {
   const hash = location.hash.substring(7); //id
+  const api = new newsDetailApi(CONTENT_URL.replace("@hash", hash));
   const getUrl = CONTENT_URL.replace("@hash", hash);
-  const newsContent = getData<NewsDetail>(getUrl);
+  const newsContent = api.getData();
   let template = `
       <div class="bg-gray-600 min-h-screen pb-8">
          <div class="bg-white text-xl">
