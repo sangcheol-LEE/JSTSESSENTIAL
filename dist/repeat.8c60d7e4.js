@@ -117,133 +117,90 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"index.ts":[function(require,module,exports) {
+})({"repeat.ts":[function(require,module,exports) {
 "use strict";
 
-var __read = this && this.__read || function (o, n) {
-  var m = typeof Symbol === "function" && o[Symbol.iterator];
-  if (!m) return o;
-  var i = m.call(o),
-    r,
-    ar = [],
-    e;
-  try {
-    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-  } catch (error) {
-    e = {
-      error: error
-    };
-  } finally {
-    try {
-      if (r && !r.done && (m = i["return"])) m.call(i);
-    } finally {
-      if (e) throw e.error;
-    }
-  }
-  return ar;
-};
-var __spreadArray = this && this.__spreadArray || function (to, from, pack) {
-  if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-    if (ar || !(i in from)) {
-      if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-      ar[i] = from[i];
-    }
-  }
-  return to.concat(ar || Array.prototype.slice.call(from));
-};
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var ajax = new XMLHttpRequest();
-var ROOT = document.getElementById("root");
-var content = document.createElement("div");
 var NEWS_URL = "https://api.hnpwa.com/v0/news/1.json";
 var CONTENT_URL = "https://api.hnpwa.com/v0/item/@hash.json";
+var ROOT = document.getElementById("root");
 var store = {
   currentPage: 1,
   feeds: []
 };
-var getData = function getData(URL) {
-  ajax.open("GET", URL, false);
+var getData = function getData(url) {
+  var ajax = new XMLHttpRequest();
+  ajax.open("GET", url, false);
   ajax.send();
   return JSON.parse(ajax.response);
-};
-// class
-var Api = /** @class */function () {
-  function Api(url) {
-    this.url = url;
-    this.ajax = new XMLHttpRequest();
-  }
-  return Api;
-}();
-var makeFeed = function makeFeed(feeds) {
-  var newFeed = __spreadArray([], __read(feeds), false).map(function (item) {
-    item.isRead = false;
-    return item;
-  });
-  return newFeed;
 };
 var updateView = function updateView(html) {
   if (ROOT) {
     ROOT.innerHTML = html;
   } else {
-    console.error("최상위 컨테이너가 없어 UI작업을 진행하지 못합니다.");
+    console.error("최상위 컨테이너가 진행하지 못합니다.");
   }
 };
-var getNewsFeed = function getNewsFeed() {
-  var newsFeed = store.feeds;
-  var news_list = [];
-  var template = "\n      <div class=\"bg-gray-600 min-h-screen\">\n         <div class=\"bg-white text-xl\">\n            <div class=\"mx-auto px-4\">\n               <div class=\"flex justify-between items-center py-6\">\n                  <div class=\"flex justify-start\">\n                     <h1 class=\"font-extrabold\">Ian's Post</h1>\n                  </div>\n                  <div class=\"items-center justify-end\">\n                     <a href=\"#/page/{{__prev_page__}}\" class=\"test-gray-500\">\n                        Previous\n                     </a>\n                     <a href=\"#/page/{{__next_page__}}\" class=\"test-gray-500 ml-4\">\n                        Next\n                     </a>\n                  </div>\n               </div>\n            </div>\n         </div>\n         <div class=\"p-4 text-2xl text-gray-700\">\n            {{__news_feed__}}\n         </div>\n      </div>\n   ";
-  if (newsFeed.length === 0) {
-    newsFeed = store.feeds = makeFeed(getData(NEWS_URL));
-  }
-  for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
-    news_list.push("\n         <div class=\"p-6 ".concat(newsFeed[i].isRead ? "bg-slate-400" : "bg-white", " mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100\">\n            <div class=\"flex\">\n               <div class=\"flex-auto\">\n                  <a href=\"#/show/").concat(newsFeed[i].id, "\">").concat(newsFeed[i].title, "</a>\n               </div>\n               <div class=\"text-center text-sm\">\n                  <div class=\"w-10 text-white bg-green-300 rounded-lg px-0 py-2\">").concat(newsFeed[i].comments_count, "</div>\n               </div>\n            </div>\n            <div class=\"flex mt-3\">\n               <div class=\"grid grid-cols-3 text-sm text-gray-500\">\n                  <div><i class=\"fas fa-user mr-1\"></i>").concat(newsFeed[i].user, "</div>\n                  <div><i class=\"fas fa-heart mr-1\"></i>").concat(newsFeed[i].points, "</div>\n                  <div><i class=\"fas fa-clock mr-1\"></i>").concat(newsFeed[i].time_ago, "</div>\n               </div>\n            </div>\n         </div>\n      "));
-  }
-  var minPage = store.currentPage > 1 ? store.currentPage - 1 : 1;
-  var maxPage = store.currentPage * 10 === newsFeed.length ? store.currentPage * 10 / 10 : store.currentPage + 1;
-  var ret = news_list.join("");
-  template = template.replace("{{__news_feed__}}", ret);
-  template = template.replace("{{__prev_page__}}", String(minPage));
-  template = template.replace("{{__next_page__}}", String(maxPage));
-  updateView(template);
+var makeNewData = function makeNewData(feeds) {
+  var ret = feeds.map(function (item) {
+    item.isRead = false;
+    return item;
+  });
+  return ret;
 };
-var newsDetail = function newsDetail() {
-  var hash = location.hash.substring(7); //id
-  var getUrl = CONTENT_URL.replace("@hash", hash);
-  var newsContent = getData(getUrl);
-  var template = "\n      <div class=\"bg-gray-600 min-h-screen pb-8\">\n         <div class=\"bg-white text-xl\">\n            <div class=\"mx-auto px-4\">\n               <div class=\"flex justify-between items-center py-6\">\n                  <div class=\"flex justify-start\">\n                     <h1 class=\"font-extrabold\">Ians' Post</h1>\n                  </div>\n                  <div class=\"items-center justify-end\">\n                     <a href=\"#/page/".concat(store.currentPage, "\" class=\"text-gray-500\">\n                        <i class=\"fa fa-times\"></i>\n                     </a>\n                  </div>\n               </div>\n            </div>\n         </div>\n         <div class=\"h-full border rounded-xl bg-white m-6 p-4\">\n            <h2 class=\"font-bold text-3xl\">").concat(newsContent.title, "</h2>\n            <div class=\"text-gray-400 h-20\">\n               ").concat(newsContent.content, "\n            </div>\n            {{__comments__}}\n         </div>\n      </div>\n   ");
+var detailFeed = function detailFeed() {
+  var _a;
+  var locate = (_a = location === null || location === void 0 ? void 0 : location.hash) === null || _a === void 0 ? void 0 : _a.substring(7);
+  var getUrl = CONTENT_URL.replace("@hash", locate);
+  var ret = getData(getUrl);
   for (var i = 0; i < store.feeds.length; i++) {
-    console.log(store.feeds[i].id);
-    console.log("hash", hash);
-    if (store.feeds[i].id === Number(hash)) {
+    if (store.feeds[i].id === Number(locate)) {
       store.feeds[i].isRead = true;
-      break;
     }
   }
-  var makeComment = function makeComment(comments) {
-    var commentString = [];
-    for (var i = 0; i < comments.length; i++) {
-      var comment = comments[i];
-      commentString.push("\n            <div style=\"padding-left: ".concat(comment.level * 40, "px;\" class=\"mt-4\">\n               <div class=\"text-gray-400\">\n                  <i class=\"\"fa fa-sort-up mr-2></i>\n                  <strong>").concat(comment.user, "</strong> ").concat(comment.time_ago, "\n               </div>\n               <p class=\"text-gray-700\">").concat(comment.content, "</p>\n            </div>\n         "));
-      if (comment.comments.length > 0) {
-        commentString.push(makeComment(comment.comments));
+  var template = "\n      <div>\n         <div class=\"flex items-center justify-between px-4 py-7 bg-white\">\n            <h1 class=\"text-3xl font-bold\">Ian's Post</h1>\n            <div class=\"text-2xl flex items-center\">\n               <a href=\"#/page/".concat(store.currentPage, "\" class=\"mr-5\">X</a>\n            </div>\n         </div>\n         <div class=\"p-7 bg-gray-700 h-screen\" style=\"height:100%\">\n            <div class=\"px-5 py-5 rounded-xl mb-7 bg-slate-100\">\n               <h1 class=\"font-bold text-2xl mb-5\">").concat(ret.title, "</h1>\n               {{comments}}\n            </div>\n         </div>\n      </div>\n   ");
+  var getComment = function getComment(comment) {
+    var commentStr = [];
+    for (var i = 0; i < comment.length; i++) {
+      var comments = comment[i];
+      commentStr.push("\n            <div class=\"mt-4\" style=\"padding-left: ".concat(comments.level * 40, "px;\">\n               <div class=\"text-gray-500\">\n                  <i class=\"fa fa-sort-up mr-2\"></i>\n                  <strong>").concat(comments.user, "</strong> ").concat(comments.time_ago, "\n               </div>\n               <p>").concat(comments.content, "</p>\n            </div>\n         "));
+      if (comments.comments.length > 0) {
+        commentStr.push(getComment(comments.comments));
       }
     }
-    return commentString.join("");
+    return commentStr.join("");
   };
   updateView(template);
 };
+var totalFeed = function totalFeed() {
+  var NEWS_FEED = store.feeds;
+  var newsList = [];
+  var template = "\n      <div>\n         <div class=\"flex items-center justify-between px-4 py-7 bg-white\">\n            <h1 class=\"text-3xl font-bold\">Ian's Post</h1>\n            <div class=\"text-2xl flex items-center\">\n               <a href=\"#/page/{{__prev__}}\" class=\"mr-5\">Prev Page</a>\n               <a href=\"#/page/{{__next__}}\">Next Page</a>\n            </div>\n         </div>\n         <div class=\"p-7 bg-gray-700\">\n            <ul>\n               {{__FEED__}}\n            </ul>\n         </div>\n\n      </div>\n   ";
+  if (NEWS_FEED.length === 0) {
+    NEWS_FEED = store.feeds = makeNewData(getData(NEWS_URL));
+  }
+  console.log(NEWS_FEED);
+  for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
+    newsList.push("\n         <div  class=\"px-5 py-5 rounded-xl mb-7 ".concat(NEWS_FEED[i].isRead ? "bg-lime-300" : "bg-slate-200", " hover:bg-lime-700\">\n            <div class=\"flex items-center justify-between\">\n               <li>\n                  <a href=\"#/show/").concat(NEWS_FEED[i].id, "\" class=\"font-bold text-2xl\"> ").concat(NEWS_FEED[i].title, "</a>\n               </li>\n               <div class=\"flex items-center justify-center w-10 h-10 bg-lime-300 rounded-xl text-white \">").concat(NEWS_FEED[i].comments_count, "</div>\n            </div>\n\n            <div class=\"flex mt-3\">\n               <div><i class=\"fas fa-user mr-1\"></i>").concat(NEWS_FEED[i].user, "</div>\n               <div class=\"mx-3\"><i class=\"fas fa-heart mr-1\"></i>").concat(NEWS_FEED[i].points, "</div>\n               <div><i class=\"fas fa-clock mr-1\"></i>").concat(NEWS_FEED[i].time_ago, "</div>\n            </div>\n         </div>\n\n      "));
+  }
+  var minPage = store.currentPage > 1 ? store.currentPage - 1 : 1;
+  var maxPage = store.currentPage * 10 === NEWS_FEED.length ? store.currentPage * 10 / 10 : store.currentPage + 1;
+  template = template.replace("{{__FEED__}}", newsList.join(""));
+  template = template.replace("{{__prev__}}", String(minPage));
+  template = template.replace("{{__next__}}", String(maxPage));
+  updateView(template);
+};
 var router = function router() {
-  var routePath = location === null || location === void 0 ? void 0 : location.hash;
-  console.log("good", routePath.substring(7));
+  var routePath = location.hash;
   if (routePath === "") {
-    getNewsFeed();
+    totalFeed();
   } else if (routePath.indexOf("#/page/") >= 0) {
-    store.currentPage = parseInt(routePath.substring(7));
-    getNewsFeed();
+    store.currentPage = Number(routePath.substring(7));
+    totalFeed();
   } else {
-    newsDetail();
+    detailFeed();
   }
 };
 window.addEventListener("hashchange", router);
@@ -417,5 +374,5 @@ function hmrAcceptRun(bundle, id) {
     return true;
   }
 }
-},{}]},{},["../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","index.ts"], null)
-//# sourceMappingURL=/hello-world.77de5100.js.map
+},{}]},{},["../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js","repeat.ts"], null)
+//# sourceMappingURL=/repeat.8c60d7e4.js.map

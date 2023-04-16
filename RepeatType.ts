@@ -3,7 +3,9 @@ export interface Store {
   feeds: NewsFeed[];
 }
 
-interface News {
+export type GetData = <AjaxResponse>(url: string) => AjaxResponse;
+
+export interface Data {
   id: number;
   time_ago: string;
   title: string;
@@ -12,17 +14,17 @@ interface News {
   content: string;
 }
 
-export interface NewsFeed extends News {
-  comments_count: number;
+export interface NewsFeed extends Data {
+  comments_count: string;
   isRead?: boolean;
   points: number;
 }
 
-export interface NewsDetail extends News {
+export interface NewsDetail extends Data {
   comments: [];
 }
 
-export interface NewsComment extends News {
+export interface Comments extends Data {
   comments: [];
   level: number;
 }

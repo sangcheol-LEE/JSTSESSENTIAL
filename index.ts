@@ -18,6 +18,16 @@ const getData = <AjaxResponse>(URL: string): AjaxResponse => {
   return JSON.parse(ajax.response);
 };
 
+// class
+class Api {
+  url: string;
+  ajax: XMLHttpRequest;
+  constructor(url: string) {
+    this.url = url;
+    this.ajax = new XMLHttpRequest();
+  }
+}
+
 const makeFeed = (feeds: NewsFeed[]) => {
   const newFeed = [...feeds].map((item) => {
     item.isRead = false;
