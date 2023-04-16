@@ -117,24 +117,95 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"repeat.ts":[function(require,module,exports) {
+})({"RepeatType.ts":[function(require,module,exports) {
+"use strict";
+
+var __extends = this && this.__extends || function () {
+  var _extendStatics = function extendStatics(d, b) {
+    _extendStatics = Object.setPrototypeOf || {
+      __proto__: []
+    } instanceof Array && function (d, b) {
+      d.__proto__ = b;
+    } || function (d, b) {
+      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
+    };
+    return _extendStatics(d, b);
+  };
+  return function (d, b) {
+    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
+    _extendStatics(d, b);
+    function __() {
+      this.constructor = d;
+    }
+    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+  };
+}();
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.makeNewData = exports.newsDetail = exports.newsFeedApi = void 0;
+var Api = /** @class */function () {
+  function Api(url) {
+    this.url = url;
+    this.ajax = new XMLHttpRequest();
+  }
+  Api.prototype.getRequestApi = function () {
+    this.ajax.open("GET", this.url, false);
+    this.ajax.send();
+    return JSON.parse(this.ajax.response);
+  };
+  return Api;
+}();
+var newsFeedApi = /** @class */function (_super) {
+  __extends(newsFeedApi, _super);
+  function newsFeedApi() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
+  newsFeedApi.prototype.getData = function () {
+    return this.getRequestApi();
+  };
+  return newsFeedApi;
+}(Api);
+exports.newsFeedApi = newsFeedApi;
+var newsDetail = /** @class */function (_super) {
+  __extends(newsDetail, _super);
+  function newsDetail() {
+    return _super !== null && _super.apply(this, arguments) || this;
+  }
+  newsDetail.prototype.getData = function () {
+    return this.getRequestApi();
+  };
+  return newsDetail;
+}(Api);
+exports.newsDetail = newsDetail;
+var makeNewData = function makeNewData(feeds) {
+  var ret = feeds.map(function (item) {
+    item.isRead = false;
+    return item;
+  });
+  return ret;
+};
+exports.makeNewData = makeNewData;
+var updateView = function updateView(html) {
+  if (ROOT) {
+    ROOT.innerHTML = html;
+  } else {
+    console.error("최상위 컨테이너가 진행하지 못합니다.");
+  }
+};
+},{}],"repeat.ts":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+var RepeatType_1 = require("./RepeatType");
 var NEWS_URL = "https://api.hnpwa.com/v0/news/1.json";
 var CONTENT_URL = "https://api.hnpwa.com/v0/item/@hash.json";
 var ROOT = document.getElementById("root");
 var store = {
   currentPage: 1,
   feeds: []
-};
-var getData = function getData(url) {
-  var ajax = new XMLHttpRequest();
-  ajax.open("GET", url, false);
-  ajax.send();
-  return JSON.parse(ajax.response);
 };
 var updateView = function updateView(html) {
   if (ROOT) {
@@ -143,18 +214,30 @@ var updateView = function updateView(html) {
     console.error("최상위 컨테이너가 진행하지 못합니다.");
   }
 };
-var makeNewData = function makeNewData(feeds) {
-  var ret = feeds.map(function (item) {
-    item.isRead = false;
-    return item;
-  });
-  return ret;
+var totalFeed = function totalFeed() {
+  var api = new RepeatType_1.newsFeedApi(NEWS_URL);
+  var NEWS_FEED = store.feeds;
+  var newsList = [];
+  var template = "\n      <div>\n         <div class=\"flex items-center justify-between px-4 py-7 bg-white\">\n            <h1 class=\"text-3xl font-bold\">Ian's Post</h1>\n            <div class=\"text-2xl flex items-center\">\n               <a href=\"#/page/{{__prev__}}\" class=\"mr-5\">Prev Page</a>\n               <a href=\"#/page/{{__next__}}\">Next Page</a>\n            </div>\n         </div>\n         <div class=\"p-7 bg-gray-700\">\n            <ul>\n               {{__FEED__}}\n            </ul>\n         </div>\n\n      </div>\n   ";
+  if (NEWS_FEED.length === 0) {
+    NEWS_FEED = store.feeds = (0, RepeatType_1.makeNewData)(api.getData());
+  }
+  console.log(NEWS_FEED);
+  for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
+    newsList.push("\n         <div  class=\"px-5 py-5 rounded-xl mb-7 ".concat(NEWS_FEED[i].isRead ? "bg-lime-300" : "bg-slate-200", " hover:bg-lime-700\">\n            <div class=\"flex items-center justify-between\">\n               <li>\n                  <a href=\"#/show/").concat(NEWS_FEED[i].id, "\" class=\"font-bold text-2xl\"> ").concat(NEWS_FEED[i].title, "</a>\n               </li>\n               <div class=\"flex items-center justify-center w-10 h-10 bg-lime-300 rounded-xl text-white \">").concat(NEWS_FEED[i].comments_count, "</div>\n            </div>\n\n            <div class=\"flex mt-3\">\n               <div><i class=\"fas fa-user mr-1\"></i>").concat(NEWS_FEED[i].user, "</div>\n               <div class=\"mx-3\"><i class=\"fas fa-heart mr-1\"></i>").concat(NEWS_FEED[i].points, "</div>\n               <div><i class=\"fas fa-clock mr-1\"></i>").concat(NEWS_FEED[i].time_ago, "</div>\n            </div>\n         </div>\n\n      "));
+  }
+  var minPage = store.currentPage > 1 ? store.currentPage - 1 : 1;
+  var maxPage = store.currentPage * 10 === NEWS_FEED.length ? store.currentPage * 10 / 10 : store.currentPage + 1;
+  template = template.replace("{{__FEED__}}", newsList.join(""));
+  template = template.replace("{{__prev__}}", String(minPage));
+  template = template.replace("{{__next__}}", String(maxPage));
+  updateView(template);
 };
 var detailFeed = function detailFeed() {
   var _a;
   var locate = (_a = location === null || location === void 0 ? void 0 : location.hash) === null || _a === void 0 ? void 0 : _a.substring(7);
-  var getUrl = CONTENT_URL.replace("@hash", locate);
-  var ret = getData(getUrl);
+  var api = new RepeatType_1.newsDetail(CONTENT_URL.replace("@hash", locate));
+  var ret = api.getData();
   for (var i = 0; i < store.feeds.length; i++) {
     if (store.feeds[i].id === Number(locate)) {
       store.feeds[i].isRead = true;
@@ -174,24 +257,6 @@ var detailFeed = function detailFeed() {
   };
   updateView(template);
 };
-var totalFeed = function totalFeed() {
-  var NEWS_FEED = store.feeds;
-  var newsList = [];
-  var template = "\n      <div>\n         <div class=\"flex items-center justify-between px-4 py-7 bg-white\">\n            <h1 class=\"text-3xl font-bold\">Ian's Post</h1>\n            <div class=\"text-2xl flex items-center\">\n               <a href=\"#/page/{{__prev__}}\" class=\"mr-5\">Prev Page</a>\n               <a href=\"#/page/{{__next__}}\">Next Page</a>\n            </div>\n         </div>\n         <div class=\"p-7 bg-gray-700\">\n            <ul>\n               {{__FEED__}}\n            </ul>\n         </div>\n\n      </div>\n   ";
-  if (NEWS_FEED.length === 0) {
-    NEWS_FEED = store.feeds = makeNewData(getData(NEWS_URL));
-  }
-  console.log(NEWS_FEED);
-  for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
-    newsList.push("\n         <div  class=\"px-5 py-5 rounded-xl mb-7 ".concat(NEWS_FEED[i].isRead ? "bg-lime-300" : "bg-slate-200", " hover:bg-lime-700\">\n            <div class=\"flex items-center justify-between\">\n               <li>\n                  <a href=\"#/show/").concat(NEWS_FEED[i].id, "\" class=\"font-bold text-2xl\"> ").concat(NEWS_FEED[i].title, "</a>\n               </li>\n               <div class=\"flex items-center justify-center w-10 h-10 bg-lime-300 rounded-xl text-white \">").concat(NEWS_FEED[i].comments_count, "</div>\n            </div>\n\n            <div class=\"flex mt-3\">\n               <div><i class=\"fas fa-user mr-1\"></i>").concat(NEWS_FEED[i].user, "</div>\n               <div class=\"mx-3\"><i class=\"fas fa-heart mr-1\"></i>").concat(NEWS_FEED[i].points, "</div>\n               <div><i class=\"fas fa-clock mr-1\"></i>").concat(NEWS_FEED[i].time_ago, "</div>\n            </div>\n         </div>\n\n      "));
-  }
-  var minPage = store.currentPage > 1 ? store.currentPage - 1 : 1;
-  var maxPage = store.currentPage * 10 === NEWS_FEED.length ? store.currentPage * 10 / 10 : store.currentPage + 1;
-  template = template.replace("{{__FEED__}}", newsList.join(""));
-  template = template.replace("{{__prev__}}", String(minPage));
-  template = template.replace("{{__next__}}", String(maxPage));
-  updateView(template);
-};
 var router = function router() {
   var routePath = location.hash;
   if (routePath === "") {
@@ -205,7 +270,7 @@ var router = function router() {
 };
 window.addEventListener("hashchange", router);
 router();
-},{}],"../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./RepeatType":"RepeatType.ts"}],"../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -230,7 +295,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "64269" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49391" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
