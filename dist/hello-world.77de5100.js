@@ -183,11 +183,6 @@ var store = {
   currentPage: 1,
   feeds: []
 };
-var getData = function getData(URL) {
-  ajax.open("GET", URL, false);
-  ajax.send();
-  return JSON.parse(ajax.response);
-};
 // class
 var Api = /** @class */function () {
   function Api(url) {
@@ -221,13 +216,78 @@ var newsDetailApi = /** @class */function (_super) {
   };
   return newsDetailApi;
 }(Api);
-var makeFeed = function makeFeed(feeds) {
-  var newFeed = __spreadArray([], __read(feeds), false).map(function (item) {
-    item.isRead = false;
-    return item;
-  });
-  return newFeed;
-};
+var View = /** @class */function () {
+  function View() {}
+  return View;
+}();
+var NewsFeedView = /** @class */function (_super) {
+  __extends(NewsFeedView, _super);
+  function NewsFeedView() {
+    var _this = this;
+    _this.makeFeed = function (feeds) {
+      var newFeed = __spreadArray([], __read(feeds), false).map(function (item) {
+        item.isRead = false;
+        return item;
+      });
+      return newFeed;
+    };
+    var api = new newsFeedApi(NEWS_URL);
+    var newsFeed = store.feeds;
+    var template = "\n      <div class=\"bg-gray-600 min-h-screen\">\n         <div class=\"bg-white text-xl\">\n            <div class=\"mx-auto px-4\">\n               <div class=\"flex justify-between items-center py-6\">\n                  <div class=\"flex justify-start\">\n                     <h1 class=\"font-extrabold\">Ian's Post</h1>\n                  </div>\n                  <div class=\"items-center justify-end\">\n                     <a href=\"#/page/{{__prev_page__}}\" class=\"test-gray-500\">\n                        Previous\n                     </a>\n                     <a href=\"#/page/{{__next_page__}}\" class=\"test-gray-500 ml-4\">\n                        Next\n                     </a>\n                  </div>\n               </div>\n            </div>\n         </div>\n         <div class=\"p-4 text-2xl text-gray-700\">\n            {{__news_feed__}}\n         </div>\n      </div>\n   ";
+    if (newsFeed.length === 0) {
+      newsFeed = store.feeds = _this.makeFeed(api.getData());
+    }
+    return _this;
+  }
+  NewsFeedView.prototype.render = function () {
+    var news_list = [];
+    for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
+      news_list.push("\n         <div class=\"p-6 ".concat(newsFeed[i].isRead ? "bg-slate-400" : "bg-white", " mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100\">\n            <div class=\"flex\">\n               <div class=\"flex-auto\">\n                  <a href=\"#/show/").concat(newsFeed[i].id, "\">").concat(newsFeed[i].title, "</a>\n               </div>\n               <div class=\"text-center text-sm\">\n                  <div class=\"w-10 text-white bg-green-300 rounded-lg px-0 py-2\">").concat(newsFeed[i].comments_count, "</div>\n               </div>\n            </div>\n            <div class=\"flex mt-3\">\n               <div class=\"grid grid-cols-3 text-sm text-gray-500\">\n                  <div><i class=\"fas fa-user mr-1\"></i>").concat(newsFeed[i].user, "</div>\n                  <div><i class=\"fas fa-heart mr-1\"></i>").concat(newsFeed[i].points, "</div>\n                  <div><i class=\"fas fa-clock mr-1\"></i>").concat(newsFeed[i].time_ago, "</div>\n               </div>\n            </div>\n         </div>\n      "));
+    }
+    var minPage = store.currentPage > 1 ? store.currentPage - 1 : 1;
+    var maxPage = store.currentPage * 10 === newsFeed.length ? store.currentPage * 10 / 10 : store.currentPage + 1;
+    var ret = news_list.join("");
+    template = template.replace("{{__news_feed__}}", ret);
+    template = template.replace("{{__prev_page__}}", String(minPage));
+    template = template.replace("{{__next_page__}}", String(maxPage));
+    updateView(template);
+  };
+  return NewsFeedView;
+}(View);
+var NewsDetailView = /** @class */function (_super) {
+  __extends(NewsDetailView, _super);
+  function NewsDetailView() {
+    var _this = this;
+    _this.makeComment = function (comments) {
+      var commentString = [];
+      for (var i = 0; i < comments.length; i++) {
+        var comment = comments[i];
+        commentString.push("\n              <div style=\"padding-left: ".concat(comment.level * 40, "px;\" class=\"mt-4\">\n                 <div class=\"text-gray-400\">\n                    <i class=\"\"fa fa-sort-up mr-2></i>\n                    <strong>").concat(comment.user, "</strong> ").concat(comment.time_ago, "\n                 </div>\n                 <p class=\"text-gray-700\">").concat(comment.content, "</p>\n              </div>\n           "));
+        if (comment.comments.length > 0) {
+          commentString.push(_this.makeComment(comment.comments));
+        }
+      }
+      return commentString.join("");
+    };
+    var template = "\n            <div class=\"bg-gray-600 min-h-screen pb-8\">\n               <div class=\"bg-white text-xl\">\n                  <div class=\"mx-auto px-4\">\n                     <div class=\"flex justify-between items-center py-6\">\n                        <div class=\"flex justify-start\">\n                           <h1 class=\"font-extrabold\">Ians' Post</h1>\n                        </div>\n                        <div class=\"items-center justify-end\">\n                           <a href=\"#/page/".concat(store.currentPage, "\" class=\"text-gray-500\">\n                              <i class=\"fa fa-times\"></i>\n                           </a>\n                        </div>\n                     </div>\n                  </div>\n               </div>\n               <div class=\"h-full border rounded-xl bg-white m-6 p-4\">\n                  <h2 class=\"font-bold text-3xl\">").concat(newsContent.title, "</h2>\n                  <div class=\"text-gray-400 h-20\">\n                     ").concat(newsContent.content, "\n                  </div>\n                  {{__comments__}}\n               </div>\n            </div>\n         ");
+    return _this;
+  }
+  NewsDetailView.prototype.render = function () {
+    var hash = location.hash.substring(7); //id
+    var api = new newsDetailApi(CONTENT_URL.replace("@hash", hash));
+    var newsContent = api.getData();
+    for (var i = 0; i < store.feeds.length; i++) {
+      console.log(store.feeds[i].id);
+      console.log("hash", hash);
+      if (store.feeds[i].id === Number(hash)) {
+        store.feeds[i].isRead = true;
+        break;
+      }
+    }
+    updateView(template.replace("{{__comments__}}", this.makeComment(newsContent.comments)));
+  };
+  return NewsDetailView;
+}(View);
 var updateView = function updateView(html) {
   if (ROOT) {
     ROOT.innerHTML = html;
@@ -235,52 +295,8 @@ var updateView = function updateView(html) {
     console.error("최상위 컨테이너가 없어 UI작업을 진행하지 못합니다.");
   }
 };
-var getNewsFeed = function getNewsFeed() {
-  var api = new newsFeedApi(NEWS_URL);
-  var newsFeed = store.feeds;
-  var news_list = [];
-  var template = "\n      <div class=\"bg-gray-600 min-h-screen\">\n         <div class=\"bg-white text-xl\">\n            <div class=\"mx-auto px-4\">\n               <div class=\"flex justify-between items-center py-6\">\n                  <div class=\"flex justify-start\">\n                     <h1 class=\"font-extrabold\">Ian's Post</h1>\n                  </div>\n                  <div class=\"items-center justify-end\">\n                     <a href=\"#/page/{{__prev_page__}}\" class=\"test-gray-500\">\n                        Previous\n                     </a>\n                     <a href=\"#/page/{{__next_page__}}\" class=\"test-gray-500 ml-4\">\n                        Next\n                     </a>\n                  </div>\n               </div>\n            </div>\n         </div>\n         <div class=\"p-4 text-2xl text-gray-700\">\n            {{__news_feed__}}\n         </div>\n      </div>\n   ";
-  if (newsFeed.length === 0) {
-    newsFeed = store.feeds = makeFeed(api.getData());
-  }
-  for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
-    news_list.push("\n         <div class=\"p-6 ".concat(newsFeed[i].isRead ? "bg-slate-400" : "bg-white", " mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100\">\n            <div class=\"flex\">\n               <div class=\"flex-auto\">\n                  <a href=\"#/show/").concat(newsFeed[i].id, "\">").concat(newsFeed[i].title, "</a>\n               </div>\n               <div class=\"text-center text-sm\">\n                  <div class=\"w-10 text-white bg-green-300 rounded-lg px-0 py-2\">").concat(newsFeed[i].comments_count, "</div>\n               </div>\n            </div>\n            <div class=\"flex mt-3\">\n               <div class=\"grid grid-cols-3 text-sm text-gray-500\">\n                  <div><i class=\"fas fa-user mr-1\"></i>").concat(newsFeed[i].user, "</div>\n                  <div><i class=\"fas fa-heart mr-1\"></i>").concat(newsFeed[i].points, "</div>\n                  <div><i class=\"fas fa-clock mr-1\"></i>").concat(newsFeed[i].time_ago, "</div>\n               </div>\n            </div>\n         </div>\n      "));
-  }
-  var minPage = store.currentPage > 1 ? store.currentPage - 1 : 1;
-  var maxPage = store.currentPage * 10 === newsFeed.length ? store.currentPage * 10 / 10 : store.currentPage + 1;
-  var ret = news_list.join("");
-  template = template.replace("{{__news_feed__}}", ret);
-  template = template.replace("{{__prev_page__}}", String(minPage));
-  template = template.replace("{{__next_page__}}", String(maxPage));
-  updateView(template);
-};
-var newsDetail = function newsDetail() {
-  var hash = location.hash.substring(7); //id
-  var api = new newsDetailApi(CONTENT_URL.replace("@hash", hash));
-  var getUrl = CONTENT_URL.replace("@hash", hash);
-  var newsContent = api.getData();
-  var template = "\n      <div class=\"bg-gray-600 min-h-screen pb-8\">\n         <div class=\"bg-white text-xl\">\n            <div class=\"mx-auto px-4\">\n               <div class=\"flex justify-between items-center py-6\">\n                  <div class=\"flex justify-start\">\n                     <h1 class=\"font-extrabold\">Ians' Post</h1>\n                  </div>\n                  <div class=\"items-center justify-end\">\n                     <a href=\"#/page/".concat(store.currentPage, "\" class=\"text-gray-500\">\n                        <i class=\"fa fa-times\"></i>\n                     </a>\n                  </div>\n               </div>\n            </div>\n         </div>\n         <div class=\"h-full border rounded-xl bg-white m-6 p-4\">\n            <h2 class=\"font-bold text-3xl\">").concat(newsContent.title, "</h2>\n            <div class=\"text-gray-400 h-20\">\n               ").concat(newsContent.content, "\n            </div>\n            {{__comments__}}\n         </div>\n      </div>\n   ");
-  for (var i = 0; i < store.feeds.length; i++) {
-    console.log(store.feeds[i].id);
-    console.log("hash", hash);
-    if (store.feeds[i].id === Number(hash)) {
-      store.feeds[i].isRead = true;
-      break;
-    }
-  }
-  var makeComment = function makeComment(comments) {
-    var commentString = [];
-    for (var i = 0; i < comments.length; i++) {
-      var comment = comments[i];
-      commentString.push("\n            <div style=\"padding-left: ".concat(comment.level * 40, "px;\" class=\"mt-4\">\n               <div class=\"text-gray-400\">\n                  <i class=\"\"fa fa-sort-up mr-2></i>\n                  <strong>").concat(comment.user, "</strong> ").concat(comment.time_ago, "\n               </div>\n               <p class=\"text-gray-700\">").concat(comment.content, "</p>\n            </div>\n         "));
-      if (comment.comments.length > 0) {
-        commentString.push(makeComment(comment.comments));
-      }
-    }
-    return commentString.join("");
-  };
-  updateView(template);
-};
+updateView(template);
+;
 var router = function router() {
   var routePath = location === null || location === void 0 ? void 0 : location.hash;
   console.log("good", routePath.substring(7));

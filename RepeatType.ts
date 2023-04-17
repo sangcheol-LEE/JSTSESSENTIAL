@@ -65,11 +65,3 @@ export const makeNewData = (feeds: NewsFeed[]) => {
   });
   return ret;
 };
-
-const updateView = (html: string) => {
-  if (ROOT) {
-    ROOT.innerHTML = html;
-  } else {
-    console.error("최상위 컨테이너가 진행하지 못합니다.");
-  }
-};

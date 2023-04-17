@@ -186,13 +186,6 @@ var makeNewData = function makeNewData(feeds) {
   return ret;
 };
 exports.makeNewData = makeNewData;
-var updateView = function updateView(html) {
-  if (ROOT) {
-    ROOT.innerHTML = html;
-  } else {
-    console.error("최상위 컨테이너가 진행하지 못합니다.");
-  }
-};
 },{}],"repeat.ts":[function(require,module,exports) {
 "use strict";
 
