@@ -5,6 +5,8 @@
    인스턴스를 만드는 방법은 js 안에서 2가지
    1. 생성자 함수
    2. 클래스
+
+   인스턴스 객체 = 암묵적으로 만든 빈 객체
 */
 
 function CartV1() {
@@ -47,7 +49,7 @@ class CartV2 {
     name,
     price,
   });
-
+  // 정적 메소드 static => 인스턴스 객체에는 드러나지 않고 클래스 자체에 붙어 있는 속성 혹은 메소드
   cart;
   createId;
 
@@ -74,6 +76,9 @@ class CartV2 {
   };
 }
 
-const shoppingCart2 = new CartV2("수박", 8000);
-const shoppingCart3 = new CartV2("두부", 80200);
-const shoppingCart4 = new CartV2("망고", 14200);
+const shoppingCart2 = new CartV2();
+
+shoppingCart2.addItem(CartV2.createItem("수박",8000))
+shoppingCart2.addItem(CartV2.createItem("코드",18000))
+shoppingCart2.addItem(CartV2.createItem("망고",84000))
+
