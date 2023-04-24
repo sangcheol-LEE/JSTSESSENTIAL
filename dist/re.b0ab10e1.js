@@ -145,13 +145,14 @@ var getMainPage = function getMainPage() {
   var NEWS_LIST = [];
   var PREV_MIN_PAGE = store.currentPage > 1 ? store.currentPage - 1 : 1;
   var NEXT_MAX_PAGE = Number(Array.from(String(NEWS_FEED.length))[0]) > store.currentPage ? store.currentPage + 1 : store.currentPage;
-  NEWS_LIST.push("<ul>");
+  var template = "\n        <div class=\"border border-black w-screen h-screen flex justify-center items-center bg-slate-500 h-auto\">\n          <div class=\"border w-auto m-auto bg-teal-400 rounded-3xl p-5 bg-white h-5/6 overflow-auto\">\n            <h1 class=\"text-5xl text-center mb-4 font-bold\">Daily News!</h1>\n              {{_main_section_}}\n            <div class=\"flex space-x-96 justify-center text-2xl text-slate-500\">\n              <a href=\"#/page/{{_prev_button_}}\"> < Prev Page </a>\n              <a href=\"#/page/{{_next_button_}}\"> Next Page ></a>\n            </div>\n          </div>\n        </div>\n      ";
   for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
-    NEWS_LIST.push("\n       <li>\n          <a href=\"#/show/".concat(NEWS_FEED[i].id, "\">").concat(NEWS_FEED[i].title, "</a> (").concat(NEWS_FEED[i].comments_count, ")\n       </li>\n      "));
+    NEWS_LIST.push("\n       <div class=\"text-2xl p-1 w-auto border p-3 bg-slate-300 rounded-xl flex items-center flex-col my-5\">\n          <div class=\"flex justify-items-start\">\n              <a href=\"#/show/".concat(NEWS_FEED[i].id, "\" class=\"mr-3 text-3xl\">").concat(NEWS_FEED[i].title, "</a>\n              <div class=\"p-1 bg-yellow-300 rounded w-10 h-10 flex items-center justify-center\">").concat(NEWS_FEED[i].comments_count, "</div>\n          </div>\n          <div class=\"flex justify-items-between text-lg\">\n            <div><i class=\"fas fa-user \"></i> ").concat(NEWS_FEED[i].user, "</div>\n            <div class=\"mx-3\"><i class=\"fas fa-heart \"> ").concat(NEWS_FEED[i].points, "</i></div>\n            <div><i class=\"fas fa-clock \"> ").concat(NEWS_FEED[i].time_ago, "</i></div>\n          </div>\n      </div>\n    "));
   }
-  NEWS_LIST.push("</ul>");
-  NEWS_LIST.push("\n     <div>\n        <a href=\"#/page/".concat(PREV_MIN_PAGE, "\"> Prev Page </a>\n        <a href=\"#/page/").concat(NEXT_MAX_PAGE, "\"> Next Page </a>\n     </div>\n    "));
-  Root.innerHTML = NEWS_LIST.join("");
+  template = template.replace("{{_main_section_}}", NEWS_LIST.join(""));
+  template = template.replace("{{_prev_button_}}", PREV_MIN_PAGE);
+  template = template.replace("{{_next_button_}}", NEXT_MAX_PAGE);
+  Root.innerHTML = template;
 };
 
 // =====================================================================
@@ -205,7 +206,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "58022" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "54399" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
