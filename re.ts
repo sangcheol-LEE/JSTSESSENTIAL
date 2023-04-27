@@ -1,10 +1,40 @@
-const Root = document.getElementById("root");
-const NEWSFEED_MAIN_URL = "https://api.hnpwa.com/v0/news/1.json";
-const DETAIL_NEWS_URL = `https://api.hnpwa.com/v0/item/@id.json`;
-const getSendRequestAjaxData = (url) => {
-  const id = window.location.hash.slice(7);
+// types
+interface Store {
+  currentPage: number;
+  feed: NewsFeed[];
+}
+interface News {
+  id: number;
+  user: string;
+  title: string;
+  time_ago: string;
+  content?: string;
+  comments_count: number;
+}
+
+interface NewsFeed extends News {
+  isRead?: boolean;
+  points: number;
+}
+
+interface NewsDetail extends News {
+  comments: Comments[];
+}
+
+interface Comments extends News {
+  comments: [];
+  level: number;
+}
+// =====================================================================
+
+const Root: HTMLElement | null = document.getElementById("root");
+const NEWSFEED_MAIN_URL: string = "https://api.hnpwa.com/v0/news/1.json";
+const DETAIL_NEWS_URL: string = `https://api.hnpwa.com/v0/item/@id.json`;
+
+const getSendRequestAjaxData = <AjaxResponse>(url: string): AjaxResponse => {
+  const id: string = window.location.hash.slice(7);
   const getReplaceUrl = url.replace("@id", id);
-  const ajax = new XMLHttpRequest();
+  const ajax: XMLHttpRequest = new XMLHttpRequest();
 
   ajax.open("GET", getReplaceUrl, false);
   ajax.send();
@@ -12,10 +42,17 @@ const getSendRequestAjaxData = (url) => {
   return JSON.parse(ajax.response);
 };
 
+const updateView = (html: string): void => {
+  if (Root) {
+    Root.innerHTML = html;
+  } else {
+    console.log("최상위 컨테이너가 없습니다 html 파일을 확인해주세요");
+  }
+};
 // =====================================================================
 // 전역상태
 
-const store = {
+const store: Store = {
   currentPage: 1,
   feed: [],
 };
@@ -23,8 +60,8 @@ const store = {
 // =====================================================================
 // 메인 페이지
 
-const getNewPropertyArray = (arr) => {
-  arr.forEach((item) => {
+const getNewPropertyArray = (arr: NewsFeed[]) => {
+  arr.forEach((item: NewsFeed) => {
     item.isRead = false;
   });
 
@@ -32,7 +69,7 @@ const getNewPropertyArray = (arr) => {
 };
 
 const getMainPage = () => {
-  let NEWS_FEED = store.feed;
+  let NEWS_FEED: NewsFeed[] = store.feed;
   const NEWS_LIST = [];
   const PREV_MIN_PAGE = store.currentPage > 1 ? store.currentPage - 1 : 1;
   const NEXT_MAX_PAGE =
@@ -54,7 +91,9 @@ const getMainPage = () => {
       `;
 
   if (NEWS_FEED.length === 0) {
-    NEWS_FEED = store.feed = getSendRequestAjaxData(NEWSFEED_MAIN_URL);
+    NEWS_FEED = store.feed = getNewPropertyArray(
+      getSendRequestAjaxData<NewsFeed[]>(NEWSFEED_MAIN_URL)
+    );
   }
 
   for (let i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
@@ -82,17 +121,16 @@ const getMainPage = () => {
   }
 
   template = template.replace("{{_main_section_}}", NEWS_LIST.join(""));
-  template = template.replace("{{_prev_button_}}", PREV_MIN_PAGE);
-  template = template.replace("{{_next_button_}}", NEXT_MAX_PAGE);
-
-  Root.innerHTML = template;
+  template = template.replace("{{_prev_button_}}", String(PREV_MIN_PAGE));
+  template = template.replace("{{_next_button_}}", String(NEXT_MAX_PAGE));
+  updateView(template);
 };
 
 // =====================================================================
 
 // 디테일 페이지
 const getDetailPage = () => {
-  const DETAIL_NEWS = getSendRequestAjaxData(DETAIL_NEWS_URL);
+  const DETAIL_NEWS = getSendRequestAjaxData<NewsDetail>(DETAIL_NEWS_URL);
 
   for (let i = 0; store.feed.length; i++) {
     if (store.feed[i].id === Number(DETAIL_NEWS.id)) {
@@ -116,23 +154,24 @@ const getDetailPage = () => {
     </div>
   `;
 
-  const makeComment = (comments, called = 0) => {
+  const makeComment = (comments: Comments[]): string => {
     const ret = [];
 
     for (let i = 0; i < comments.length; i++) {
+      const comment = comments[i];
       ret.push(`
-        <div style="padding-left: ${40 * called}px" class="mb-5">
+        <div style="padding-left: ${40 * comment.level}px" class="mb-5">
           <div class="text-slate-300">
-            <span>${comments[i].user}<span> <span>${comments[i].time_ago}<span>
+            <span>${comment.user}<span> <span>${comment.time_ago}<span>
           </div>
           <div class="pl-4">
-            <div>${comments[i].content}</div>
+            <div>${comment.content}</div>
           </div>
         </div>
       `);
 
-      if (comments[i].comments.length > 0) {
-        ret.push(makeComment(comments[i].comments, called + 1));
+      if (comment.comments.length > 0) {
+        ret.push(makeComment(comment.comments));
       }
     }
     return ret.join("");
@@ -142,14 +181,14 @@ const getDetailPage = () => {
     "{{_comment_}}",
     makeComment(DETAIL_NEWS.comments)
   );
-  template = template.replace("{{_listPage_}}", store.currentPage);
-  Root.innerHTML = template;
+  template = template.replace("{{_listPage_}}", String(store.currentPage));
+  updateView(template);
 };
 
 // =====================================================================
 // 라우터 함수
-const router = () => {
-  const HASH = window.location.hash;
+const router = (): void => {
+  const HASH: string = window.location.hash;
   if (HASH === "") {
     getMainPage();
   } else if (HASH.indexOf("#/page/") >= 0) {
