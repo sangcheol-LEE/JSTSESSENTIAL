@@ -120,197 +120,272 @@ parcelRequire = (function (modules, cache, entry, globalName) {
 })({"index.ts":[function(require,module,exports) {
 "use strict";
 
-var __extends = this && this.__extends || function () {
-  var _extendStatics = function extendStatics(d, b) {
-    _extendStatics = Object.setPrototypeOf || {
-      __proto__: []
-    } instanceof Array && function (d, b) {
-      d.__proto__ = b;
-    } || function (d, b) {
-      for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p];
-    };
-    return _extendStatics(d, b);
-  };
-  return function (d, b) {
-    if (typeof b !== "function" && b !== null) throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-    _extendStatics(d, b);
-    function __() {
-      this.constructor = d;
-    }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-  };
-}();
-var __read = this && this.__read || function (o, n) {
-  var m = typeof Symbol === "function" && o[Symbol.iterator];
-  if (!m) return o;
-  var i = m.call(o),
-    r,
-    ar = [],
-    e;
-  try {
-    while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-  } catch (error) {
-    e = {
-      error: error
-    };
-  } finally {
-    try {
-      if (r && !r.done && (m = i["return"])) m.call(i);
-    } finally {
-      if (e) throw e.error;
-    }
-  }
-  return ar;
-};
-var __spreadArray = this && this.__spreadArray || function (to, from, pack) {
-  if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-    if (ar || !(i in from)) {
-      if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-      ar[i] = from[i];
-    }
-  }
-  return to.concat(ar || Array.prototype.slice.call(from));
-};
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-var ajax = new XMLHttpRequest();
-var ROOT = document.getElementById("root");
-var content = document.createElement("div");
-var NEWS_URL = "https://api.hnpwa.com/v0/news/1.json";
-var CONTENT_URL = "https://api.hnpwa.com/v0/item/@hash.json";
+// =====================================================================
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function"); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, writable: true, configurable: true } }); Object.defineProperty(subClass, "prototype", { writable: false }); if (superClass) _setPrototypeOf(subClass, superClass); }
+function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
+function _createSuper(Derived) { var hasNativeReflectConstruct = _isNativeReflectConstruct(); return function _createSuperInternal() { var Super = _getPrototypeOf(Derived), result; if (hasNativeReflectConstruct) { var NewTarget = _getPrototypeOf(this).constructor; result = Reflect.construct(Super, arguments, NewTarget); } else { result = Super.apply(this, arguments); } return _possibleConstructorReturn(this, result); }; }
+function _possibleConstructorReturn(self, call) { if (call && (_typeof(call) === "object" || typeof call === "function")) { return call; } else if (call !== void 0) { throw new TypeError("Derived constructors may only return object or undefined"); } return _assertThisInitialized(self); }
+function _assertThisInitialized(self) { if (self === void 0) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return self; }
+function _isNativeReflectConstruct() { if (typeof Reflect === "undefined" || !Reflect.construct) return false; if (Reflect.construct.sham) return false; if (typeof Proxy === "function") return true; try { Boolean.prototype.valueOf.call(Reflect.construct(Boolean, [], function () {})); return true; } catch (e) { return false; } }
+function _getPrototypeOf(o) { _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) { return o.__proto__ || Object.getPrototypeOf(o); }; return _getPrototypeOf(o); }
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+function _createForOfIteratorHelper(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (!it) { if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; var F = function F() {}; return { s: F, n: function n() { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }, e: function e(_e) { throw _e; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var normalCompletion = true, didErr = false, err; return { s: function s() { it = it.call(o); }, n: function n() { var step = it.next(); normalCompletion = step.done; return step; }, e: function e(_e2) { didErr = true; err = _e2; }, f: function f() { try { if (!normalCompletion && it.return != null) it.return(); } finally { if (didErr) throw err; } } }; }
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+var Root = document.getElementById("root");
+var NEWSFEED_MAIN_URL = "https://api.hnpwa.com/v0/news/1.json";
+var DETAIL_NEWS_URL = "https://api.hnpwa.com/v0/item/@id.json";
 var store = {
   currentPage: 1,
-  feeds: []
+  feed: []
 };
-// class
-var Api = /** @class */function () {
+// =====================================================================
+var Router = /*#__PURE__*/function () {
+  function Router() {
+    _classCallCheck(this, Router);
+    window.addEventListener("hashchange", this.route.bind(this));
+    this.routeTable = [];
+    this.defaultRoute = null;
+  }
+  _createClass(Router, [{
+    key: "setDefaultPage",
+    value: function setDefaultPage(page) {
+      this.defaultRoute = {
+        path: "",
+        page: page
+      };
+    }
+  }, {
+    key: "addRouterPage",
+    value: function addRouterPage(path, page) {
+      this.routeTable.push({
+        path: path,
+        page: page
+      });
+    }
+  }, {
+    key: "route",
+    value: function route() {
+      var routerPath = location.hash;
+      console.log("routerPath", routerPath);
+      if (routerPath === "" && this.defaultRoute) {
+        this.defaultRoute.page.render();
+      }
+      var _iterator = _createForOfIteratorHelper(this.routeTable),
+        _step;
+      try {
+        for (_iterator.s(); !(_step = _iterator.n()).done;) {
+          var routeInfo = _step.value;
+          if (routerPath.indexOf(routeInfo.path) >= 0) {
+            routeInfo.page.render();
+            break;
+          }
+        }
+      } catch (err) {
+        _iterator.e(err);
+      } finally {
+        _iterator.f();
+      }
+    }
+  }]);
+  return Router;
+}(); // =====================================================================
+//class
+var Api = /*#__PURE__*/function () {
   function Api(url) {
+    _classCallCheck(this, Api);
     this.url = url;
     this.ajax = new XMLHttpRequest();
   }
-  Api.prototype.getRequest = function () {
-    this.ajax.open("GET", this.url, false);
-    this.ajax.send();
-    return JSON.parse(this.ajax.response);
-  };
+  _createClass(Api, [{
+    key: "getId",
+    value: function getId() {
+      var id = window.location.hash.substring(7);
+      var getReplaceUrl = this.url.replace("@id", id);
+      return getReplaceUrl;
+    }
+  }, {
+    key: "getRequest",
+    value: function getRequest() {
+      this.ajax.open("GET", this.getId(), false);
+      this.ajax.send();
+      return JSON.parse(this.ajax.response);
+    }
+  }]);
   return Api;
 }();
-var newsFeedApi = /** @class */function (_super) {
-  __extends(newsFeedApi, _super);
-  function newsFeedApi() {
-    return _super !== null && _super.apply(this, arguments) || this;
+var NewsFeedApi = /*#__PURE__*/function (_Api) {
+  _inherits(NewsFeedApi, _Api);
+  var _super = _createSuper(NewsFeedApi);
+  function NewsFeedApi() {
+    _classCallCheck(this, NewsFeedApi);
+    return _super.apply(this, arguments);
   }
-  newsFeedApi.prototype.getData = function () {
-    return this.getRequest();
-  };
-  return newsFeedApi;
+  _createClass(NewsFeedApi, [{
+    key: "getSendRequestAjaxData",
+    value: function getSendRequestAjaxData() {
+      return this.getRequest();
+    }
+  }]);
+  return NewsFeedApi;
 }(Api);
-var newsDetailApi = /** @class */function (_super) {
-  __extends(newsDetailApi, _super);
-  function newsDetailApi() {
-    return _super !== null && _super.apply(this, arguments) || this;
+var NewsDetailApi = /*#__PURE__*/function (_Api2) {
+  _inherits(NewsDetailApi, _Api2);
+  var _super2 = _createSuper(NewsDetailApi);
+  function NewsDetailApi() {
+    _classCallCheck(this, NewsDetailApi);
+    return _super2.apply(this, arguments);
   }
-  newsDetailApi.prototype.getData = function () {
-    return this.getRequest();
-  };
-  return newsDetailApi;
-}(Api);
-var View = /** @class */function () {
-  function View() {}
+  _createClass(NewsDetailApi, [{
+    key: "getSendRequestAjaxData",
+    value: function getSendRequestAjaxData() {
+      return this.getRequest();
+    }
+  }]);
+  return NewsDetailApi;
+}(Api); // ============================================================
+var View = /*#__PURE__*/function () {
+  function View(rootId, template) {
+    var _this = this;
+    _classCallCheck(this, View);
+    this.updateView = function () {
+      _this.root.innerHTML = _this.renderTemplate;
+      _this.renderTemplate = _this.template;
+    };
+    var root = document.getElementById(rootId);
+    if (!root) {
+      throw new Error("최상위 컨테이너가 null입니다. html 및 id를 확인해주세요");
+    }
+    this.root = root;
+    this.template = template;
+    this.renderTemplate = template;
+    this.htmlList = [];
+  }
+  _createClass(View, [{
+    key: "addHtml",
+    value: function addHtml(htmlString) {
+      this.htmlList.push(htmlString);
+    }
+  }, {
+    key: "getHtml",
+    value: function getHtml() {
+      var snapshot = this.htmlList.join("");
+      this.clearHtml();
+      return snapshot;
+    }
+  }, {
+    key: "setTemplateData",
+    value: function setTemplateData(key, value) {
+      this.renderTemplate = this.renderTemplate.replace("{{_".concat(key, "_}}"), value);
+    }
+  }, {
+    key: "clearHtml",
+    value: function clearHtml() {
+      this.htmlList = [];
+    }
+  }]);
   return View;
 }();
-var NewsFeedView = /** @class */function (_super) {
-  __extends(NewsFeedView, _super);
-  function NewsFeedView() {
-    var _this = this;
-    _this.makeFeed = function (feeds) {
-      var newFeed = __spreadArray([], __read(feeds), false).map(function (item) {
-        item.isRead = false;
-        return item;
-      });
-      return newFeed;
-    };
-    var api = new newsFeedApi(NEWS_URL);
-    var newsFeed = store.feeds;
-    var template = "\n      <div class=\"bg-gray-600 min-h-screen\">\n         <div class=\"bg-white text-xl\">\n            <div class=\"mx-auto px-4\">\n               <div class=\"flex justify-between items-center py-6\">\n                  <div class=\"flex justify-start\">\n                     <h1 class=\"font-extrabold\">Ian's Post</h1>\n                  </div>\n                  <div class=\"items-center justify-end\">\n                     <a href=\"#/page/{{__prev_page__}}\" class=\"test-gray-500\">\n                        Previous\n                     </a>\n                     <a href=\"#/page/{{__next_page__}}\" class=\"test-gray-500 ml-4\">\n                        Next\n                     </a>\n                  </div>\n               </div>\n            </div>\n         </div>\n         <div class=\"p-4 text-2xl text-gray-700\">\n            {{__news_feed__}}\n         </div>\n      </div>\n   ";
-    if (newsFeed.length === 0) {
-      newsFeed = store.feeds = _this.makeFeed(api.getData());
+var NewsfeedView = /*#__PURE__*/function (_View) {
+  _inherits(NewsfeedView, _View);
+  var _super3 = _createSuper(NewsfeedView);
+  function NewsfeedView(rootId) {
+    var _this2;
+    _classCallCheck(this, NewsfeedView);
+    var template = "\n      <div class=\"border border-black w-screen h-screen flex justify-center items-center bg-slate-500 h-auto\">\n        <div class=\"border w-auto m-auto bg-teal-400 rounded-3xl p-5 bg-white h-5/6 overflow-auto\">\n          <h1 class=\"text-5xl text-center mb-4 font-bold\">Daily News!</h1>\n\n          {{_main_section_}}\n\n          <div class=\"flex space-x-96 justify-center text-2xl text-slate-500\">\n            <a class=\"hover:text-3xl hover:text-slate-700 transition-all duration-200\" href=\"#/page/{{_prev_button_}}\">< Prev Page </a>\n            <a class=\"hover:text-3xl hover:text-slate-700 transition-all duration-200\" href=\"#/page/{{_next_button_}}\"> Next Page ></a>\n          </div>\n        </div>\n      </div>\n    ";
+    _this2 = _super3.call(this, rootId, template);
+    _this2.feeds = store.feed;
+    _this2.api = new NewsFeedApi(NEWSFEED_MAIN_URL);
+    if (_this2.feeds.length === 0) {
+      _this2.feeds = store.feed = _this2.api.getSendRequestAjaxData();
+      _this2.getNewPropertyArray();
     }
-    return _this;
+    return _this2;
   }
-  NewsFeedView.prototype.render = function () {
-    var news_list = [];
-    for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
-      news_list.push("\n         <div class=\"p-6 ".concat(newsFeed[i].isRead ? "bg-slate-400" : "bg-white", " mt-6 rounded-lg shadow-md transition-colors duration-500 hover:bg-green-100\">\n            <div class=\"flex\">\n               <div class=\"flex-auto\">\n                  <a href=\"#/show/").concat(newsFeed[i].id, "\">").concat(newsFeed[i].title, "</a>\n               </div>\n               <div class=\"text-center text-sm\">\n                  <div class=\"w-10 text-white bg-green-300 rounded-lg px-0 py-2\">").concat(newsFeed[i].comments_count, "</div>\n               </div>\n            </div>\n            <div class=\"flex mt-3\">\n               <div class=\"grid grid-cols-3 text-sm text-gray-500\">\n                  <div><i class=\"fas fa-user mr-1\"></i>").concat(newsFeed[i].user, "</div>\n                  <div><i class=\"fas fa-heart mr-1\"></i>").concat(newsFeed[i].points, "</div>\n                  <div><i class=\"fas fa-clock mr-1\"></i>").concat(newsFeed[i].time_ago, "</div>\n               </div>\n            </div>\n         </div>\n      "));
+  _createClass(NewsfeedView, [{
+    key: "getNewPropertyArray",
+    value: function getNewPropertyArray() {
+      for (var i = 0; i < this.feeds.length; i++) {
+        this.feeds[i].isRead = false;
+      }
     }
-    var minPage = store.currentPage > 1 ? store.currentPage - 1 : 1;
-    var maxPage = store.currentPage * 10 === newsFeed.length ? store.currentPage * 10 / 10 : store.currentPage + 1;
-    var ret = news_list.join("");
-    template = template.replace("{{__news_feed__}}", ret);
-    template = template.replace("{{__prev_page__}}", String(minPage));
-    template = template.replace("{{__next_page__}}", String(maxPage));
-    updateView(template);
-  };
-  return NewsFeedView;
-}(View);
-var NewsDetailView = /** @class */function (_super) {
-  __extends(NewsDetailView, _super);
-  function NewsDetailView() {
-    var _this = this;
-    _this.makeComment = function (comments) {
-      var commentString = [];
-      for (var i = 0; i < comments.length; i++) {
-        var comment = comments[i];
-        commentString.push("\n              <div style=\"padding-left: ".concat(comment.level * 40, "px;\" class=\"mt-4\">\n                 <div class=\"text-gray-400\">\n                    <i class=\"\"fa fa-sort-up mr-2></i>\n                    <strong>").concat(comment.user, "</strong> ").concat(comment.time_ago, "\n                 </div>\n                 <p class=\"text-gray-700\">").concat(comment.content, "</p>\n              </div>\n           "));
-        if (comment.comments.length > 0) {
-          commentString.push(_this.makeComment(comment.comments));
+  }, {
+    key: "render",
+    value: function render() {
+      store.currentPage = Number(location.hash.substring(7) || 1);
+      for (var i = (store.currentPage - 1) * 10; i < store.currentPage * 10; i++) {
+        var _this$feeds$i = this.feeds[i],
+          isRead = _this$feeds$i.isRead,
+          id = _this$feeds$i.id,
+          title = _this$feeds$i.title,
+          comments_count = _this$feeds$i.comments_count,
+          user = _this$feeds$i.user,
+          points = _this$feeds$i.points,
+          time_ago = _this$feeds$i.time_ago;
+        this.addHtml("\n         <div class=\"text-2xl p-1 w-auto border p-3 ".concat(isRead ? "bg-slate-500" : "bg-slate-300", " rounded-xl flex items-center flex-col my-5 hover:bg-slate-700 transition duration-500\">\n            <div class=\"flex justify-items-start\">\n                <a href=\"#/show/").concat(id, "\" class=\"mr-3 text-3xl\">").concat(title, "</a>\n                <div class=\"p-1 bg-yellow-300 rounded w-10 h-10 flex items-center justify-center\">").concat(comments_count, "</div>\n            </div>\n            <div class=\"flex justify-items-between text-lg\">\n              <div><i class=\"fas fa-user \"></i> ").concat(user, "</div>\n              <div class=\"mx-3\"><i class=\"fas fa-heart \"> ").concat(points, "</i></div>\n              <div><i class=\"fas fa-clock \"> ").concat(time_ago, "</i></div>\n            </div>\n        </div>\n      "));
+      }
+      this.setTemplateData("main_section", this.getHtml());
+      this.setTemplateData("prev_button", String("".concat(store.currentPage > 1 ? store.currentPage - 1 : 1)));
+      this.setTemplateData("next_button", String("".concat(Number(Array.from(String(this.feeds.length))[0]) > store.currentPage ? store.currentPage + 1 : store.currentPage)));
+      this.updateView();
+    }
+  }]);
+  return NewsfeedView;
+}(View); // 디테일 페이지
+// =====================================================================
+var NewsDetailView = /*#__PURE__*/function (_View2) {
+  _inherits(NewsDetailView, _View2);
+  var _super4 = _createSuper(NewsDetailView);
+  function NewsDetailView(rootId) {
+    _classCallCheck(this, NewsDetailView);
+    var template = "\n      <div class=\"border border-black w-screen h-screen flex justify-center items-center bg-slate-500 h-auto\">\n        <div class=\"border w-auto m-auto bg-teal-400 rounded-3xl p-5 bg-white h-5/6 overflow-auto\">\n          <h1 class=\"text-5xl text-center mb-4 font-bold\">{{_title_}}</h1>\n          <p>{{_content_}}</p>\n\n          {{_comment_}}\n\n          <div class=\"flex space-x-96 justify-center text-2xl text-slate-500\">\n            <a href=\"#/page/{{_listPage_}}\">\uBAA9\uB85D\uC73C\uB85C</a>\n          </div>\n        </div/>\n      </div>\n    ";
+    return _super4.call(this, rootId, template);
+  }
+  _createClass(NewsDetailView, [{
+    key: "render",
+    value: function render() {
+      var api = new NewsDetailApi(DETAIL_NEWS_URL);
+      var DETAIL_NEWS = api.getSendRequestAjaxData();
+      for (var i = 0; store.feed.length; i++) {
+        if (store.feed[i].id === Number(DETAIL_NEWS.id)) {
+          store.feed[i].isRead = true;
+          break;
         }
       }
-      return commentString.join("");
-    };
-    var template = "\n            <div class=\"bg-gray-600 min-h-screen pb-8\">\n               <div class=\"bg-white text-xl\">\n                  <div class=\"mx-auto px-4\">\n                     <div class=\"flex justify-between items-center py-6\">\n                        <div class=\"flex justify-start\">\n                           <h1 class=\"font-extrabold\">Ians' Post</h1>\n                        </div>\n                        <div class=\"items-center justify-end\">\n                           <a href=\"#/page/".concat(store.currentPage, "\" class=\"text-gray-500\">\n                              <i class=\"fa fa-times\"></i>\n                           </a>\n                        </div>\n                     </div>\n                  </div>\n               </div>\n               <div class=\"h-full border rounded-xl bg-white m-6 p-4\">\n                  <h2 class=\"font-bold text-3xl\">").concat(newsContent.title, "</h2>\n                  <div class=\"text-gray-400 h-20\">\n                     ").concat(newsContent.content, "\n                  </div>\n                  {{__comments__}}\n               </div>\n            </div>\n         ");
-    return _this;
-  }
-  NewsDetailView.prototype.render = function () {
-    var hash = location.hash.substring(7); //id
-    var api = new newsDetailApi(CONTENT_URL.replace("@hash", hash));
-    var newsContent = api.getData();
-    for (var i = 0; i < store.feeds.length; i++) {
-      console.log(store.feeds[i].id);
-      console.log("hash", hash);
-      if (store.feeds[i].id === Number(hash)) {
-        store.feeds[i].isRead = true;
-        break;
-      }
+      this.setTemplateData("comment", this.makeComment(DETAIL_NEWS.comments));
+      this.setTemplateData("listPage", String(store.currentPage));
+      this.setTemplateData("title", DETAIL_NEWS.title);
+      // this.setTemplateData("_content_", DETAIL_NEWS.content);
+      this.updateView();
     }
-    updateView(template.replace("{{__comments__}}", this.makeComment(newsContent.comments)));
-  };
+  }, {
+    key: "makeComment",
+    value: function makeComment(comments) {
+      for (var i = 0; i < comments.length; i++) {
+        var comment = comments[i];
+        this.addHtml("\n      <div style=\"padding-left: ".concat(40 * comment.level, "px\" class=\"mb-5\">\n        <div class=\"text-slate-300\">\n          <span>").concat(comment.user, "<span> <span>").concat(comment.time_ago, "<span>\n        </div>\n        <div class=\"pl-4\">\n          <div>").concat(comment.content, "</div>\n        </div>\n      </div>\n    "));
+        if (comment.comments.length > 0) {
+          this.addHtml(this.makeComment(comment.comments));
+        }
+      }
+      return this.getHtml();
+    }
+  }]);
   return NewsDetailView;
-}(View);
-var updateView = function updateView(html) {
-  if (ROOT) {
-    ROOT.innerHTML = html;
-  } else {
-    console.error("최상위 컨테이너가 없어 UI작업을 진행하지 못합니다.");
-  }
-};
-updateView(template);
-;
-var router = function router() {
-  var routePath = location === null || location === void 0 ? void 0 : location.hash;
-  console.log("good", routePath.substring(7));
-  if (routePath === "") {
-    getNewsFeed();
-  } else if (routePath.indexOf("#/page/") >= 0) {
-    store.currentPage = parseInt(routePath.substring(7));
-    getNewsFeed();
-  } else {
-    newsDetail();
-  }
-};
-window.addEventListener("hashchange", router);
-router();
+}(View); // ============================================================
+// =====================================================================
+var router = new Router();
+var newsFeedView = new NewsfeedView("root");
+var newsDetailView = new NewsDetailView("root");
+router.setDefaultPage(newsFeedView);
+router.addRouterPage("/page/", newsFeedView);
+router.addRouterPage("/show/", newsDetailView);
+router.route();
 },{}],"../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -336,7 +411,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49828" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49689" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];
