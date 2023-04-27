@@ -4,26 +4,26 @@ interface Store {
   feed: NewsFeed[];
 }
 interface News {
-  id: number;
-  user: string;
-  title: string;
-  time_ago: string;
-  content?: string;
-  comments_count: number;
+  readonly id: number;
+  readonly user: string;
+  readonly title: string;
+  readonly time_ago: string;
+  readonly content?: string;
+  readonly comments_count: number;
 }
 
 interface NewsFeed extends News {
   isRead?: boolean;
-  points: number;
+  readonly points: number;
 }
 
 interface NewsDetail extends News {
-  comments: Comments[];
+  readonly comments: Comments[];
 }
 
 interface Comments extends News {
-  comments: [];
-  level: number;
+  readonly comments: Comments[];
+  readonly level: number;
 }
 // =====================================================================
 
