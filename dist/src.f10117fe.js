@@ -349,44 +349,36 @@ var view_1 = require("../core/view");
 var NewsfeedView = /*#__PURE__*/function (_view_1$View) {
   _inherits(NewsfeedView, _view_1$View);
   var _super = _createSuper(NewsfeedView);
-  function NewsfeedView(rootId) {
+  function NewsfeedView(rootId, store) {
     var _this;
     _classCallCheck(this, NewsfeedView);
     var template = "\n        <div class=\"border border-black w-screen h-screen flex justify-center items-center bg-slate-500 h-auto\">\n          <div class=\"border w-auto m-auto bg-teal-400 rounded-3xl p-5 bg-white h-5/6 overflow-auto\">\n            <h1 class=\"text-5xl text-center mb-4 font-bold\">Daily News!</h1>\n\n            {{_main_section_}}\n\n            <div class=\"flex space-x-96 justify-center text-2xl text-slate-500\">\n              <a class=\"hover:text-3xl hover:text-slate-700 transition-all duration-200\" href=\"#/page/{{_prev_button_}}\">< Prev Page </a>\n              <a class=\"hover:text-3xl hover:text-slate-700 transition-all duration-200\" href=\"#/page/{{_next_button_}}\"> Next Page ></a>\n            </div>\n          </div>\n        </div>\n      ";
     _this = _super.call(this, rootId, template);
-    _this.feeds = window.store.feed;
+    _this.store = store;
     _this.api = new api_1.NewsFeedApi(config_1.NEWSFEED_MAIN_URL);
-    if (_this.feeds.length === 0) {
-      _this.feeds = window.store.feed = _this.api.getSendRequestAjaxData();
-      _this.getNewPropertyArray();
+    if (!_this.store.hasFeed) {
+      _this.store.setFeed(_this.api.getSendRequestAjaxData());
     }
     return _this;
   }
   _createClass(NewsfeedView, [{
-    key: "getNewPropertyArray",
-    value: function getNewPropertyArray() {
-      for (var i = 0; i < this.feeds.length; i++) {
-        this.feeds[i].isRead = false;
-      }
-    }
-  }, {
     key: "render",
     value: function render() {
-      window.store.currentPage = Number(location.hash.substring(7) || 1);
-      for (var i = (window.store.currentPage - 1) * 10; i < window.store.currentPage * 10; i++) {
-        var _this$feeds$i = this.feeds[i],
-          isRead = _this$feeds$i.isRead,
-          id = _this$feeds$i.id,
-          title = _this$feeds$i.title,
-          comments_count = _this$feeds$i.comments_count,
-          user = _this$feeds$i.user,
-          points = _this$feeds$i.points,
-          time_ago = _this$feeds$i.time_ago;
+      this.store.currentPage = Number(location.hash.substring(7) || 1);
+      for (var i = (this.store.currentPage - 1) * 10; i < this.store.currentPage * 10; i++) {
+        var _this$store$getFeed = this.store.getFeed(i),
+          isRead = _this$store$getFeed.isRead,
+          id = _this$store$getFeed.id,
+          title = _this$store$getFeed.title,
+          comments_count = _this$store$getFeed.comments_count,
+          user = _this$store$getFeed.user,
+          points = _this$store$getFeed.points,
+          time_ago = _this$store$getFeed.time_ago;
         this.addHtml("\n           <div class=\"text-2xl p-1 w-auto border p-3 ".concat(isRead ? "bg-slate-500" : "bg-slate-300", " rounded-xl flex items-center flex-col my-5 hover:bg-slate-700 transition duration-500\">\n              <div class=\"flex justify-items-start\">\n                  <a href=\"#/show/").concat(id, "\" class=\"mr-3 text-3xl\">").concat(title, "</a>\n                  <div class=\"p-1 bg-yellow-300 rounded w-10 h-10 flex items-center justify-center\">").concat(comments_count, "</div>\n              </div>\n              <div class=\"flex justify-items-between text-lg\">\n                <div><i class=\"fas fa-user \"></i> ").concat(user, "</div>\n                <div class=\"mx-3\"><i class=\"fas fa-heart \"> ").concat(points, "</i></div>\n                <div><i class=\"fas fa-clock \"> ").concat(time_ago, "</i></div>\n              </div>\n          </div>\n        "));
       }
       this.setTemplateData("main_section", this.getHtml());
-      this.setTemplateData("prev_button", String("".concat(window.store.currentPage > 1 ? window.store.currentPage - 1 : 1)));
-      this.setTemplateData("next_button", String("".concat(Number(Array.from(String(this.feeds.length))[0]) > window.store.currentPage ? window.store.currentPage + 1 : window.store.currentPage)));
+      this.setTemplateData("prev_button", String(this.store.prevPage));
+      this.setTemplateData("next_button", String(this.store.nextPage));
       this.updateView();
     }
   }]);
@@ -418,24 +410,22 @@ var view_1 = require("../core/view");
 var NewsDetailView = /*#__PURE__*/function (_view_1$View) {
   _inherits(NewsDetailView, _view_1$View);
   var _super = _createSuper(NewsDetailView);
-  function NewsDetailView(rootId) {
+  function NewsDetailView(rootId, store) {
+    var _this;
     _classCallCheck(this, NewsDetailView);
     var template = "\n        <div class=\"border border-black w-screen h-screen flex justify-center items-center bg-slate-500 h-auto\">\n          <div class=\"border w-auto m-auto bg-teal-400 rounded-3xl p-5 bg-white h-5/6 overflow-auto\">\n            <h1 class=\"text-5xl text-center mb-4 font-bold\">{{_title_}}</h1>\n            <p>{{_content_}}</p>\n\n            {{_comment_}}\n\n            <div class=\"flex space-x-96 justify-center text-2xl text-slate-500\">\n              <a href=\"#/page/{{_listPage_}}\">\uBAA9\uB85D\uC73C\uB85C</a>\n            </div>\n          </div/>\n        </div>\n      ";
-    return _super.call(this, rootId, template);
+    _this = _super.call(this, rootId, template);
+    _this.store = store;
+    return _this;
   }
   _createClass(NewsDetailView, [{
     key: "render",
     value: function render() {
       var api = new api_1.NewsDetailApi(config_1.DETAIL_NEWS_URL);
       var DETAIL_NEWS = api.getSendRequestAjaxData();
-      for (var i = 0; window.store.feed.length; i++) {
-        if (window.store.feed[i].id === Number(DETAIL_NEWS.id)) {
-          window.store.feed[i].isRead = true;
-          break;
-        }
-      }
+      this.store.makeRead(Number(DETAIL_NEWS.id));
       this.setTemplateData("comment", this.makeComment(DETAIL_NEWS.comments));
-      this.setTemplateData("listPage", String(window.store.currentPage));
+      this.setTemplateData("listPage", String(this.store.currentPage));
       this.setTemplateData("title", DETAIL_NEWS.title);
       // this.setTemplateData("_content_", DETAIL_NEWS.content);
       this.updateView();
@@ -482,7 +472,86 @@ Object.defineProperty(exports, "NewsDetailView", {
     return __importDefault(newDetail_1).default;
   }
 });
-},{"./newsFeed":"src/page/newsFeed.ts","./newDetail":"src/page/newDetail.ts"}],"src/index.ts":[function(require,module,exports) {
+},{"./newsFeed":"src/page/newsFeed.ts","./newDetail":"src/page/newDetail.ts"}],"src/store.ts":[function(require,module,exports) {
+"use strict";
+
+function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, _toPropertyKey(descriptor.key), descriptor); } }
+function _createClass(Constructor, protoProps, staticProps) { if (protoProps) _defineProperties(Constructor.prototype, protoProps); if (staticProps) _defineProperties(Constructor, staticProps); Object.defineProperty(Constructor, "prototype", { writable: false }); return Constructor; }
+function _toPropertyKey(arg) { var key = _toPrimitive(arg, "string"); return _typeof(key) === "symbol" ? key : String(key); }
+function _toPrimitive(input, hint) { if (_typeof(input) !== "object" || input === null) return input; var prim = input[Symbol.toPrimitive]; if (prim !== undefined) { var res = prim.call(input, hint || "default"); if (_typeof(res) !== "object") return res; throw new TypeError("@@toPrimitive must return a primitive value."); } return (hint === "string" ? String : Number)(input); }
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var Store = /*#__PURE__*/function () {
+  function Store() {
+    _classCallCheck(this, Store);
+    this._currentPage = 1;
+    this.feeds = [];
+  }
+  _createClass(Store, [{
+    key: "currentPage",
+    get: function get() {
+      return this._currentPage;
+    },
+    set: function set(page) {
+      this._currentPage = page;
+    }
+  }, {
+    key: "nextPage",
+    get: function get() {
+      return this._currentPage + 1;
+    }
+  }, {
+    key: "prevPage",
+    get: function get() {
+      return this._currentPage > 1 ? this._currentPage - 1 : 1;
+    }
+  }, {
+    key: "numberOfFeed",
+    get: function get() {
+      return this.feeds.length;
+    }
+  }, {
+    key: "hasFeed",
+    get: function get() {
+      return this.feeds.length > 0;
+    }
+  }, {
+    key: "getAllFeed",
+    value: function getAllFeed() {
+      return this.feeds;
+    }
+  }, {
+    key: "getFeed",
+    value: function getFeed(position) {
+      return this.feeds[position];
+    }
+  }, {
+    key: "setFeed",
+    value: function setFeed(feeds) {
+      this.feeds = feeds.map(function (item) {
+        return Object.assign(Object.assign({}, item), {
+          isRead: false
+        });
+      });
+    }
+  }, {
+    key: "makeRead",
+    value: function makeRead(id) {
+      var feed = this.feeds.find(function (feed) {
+        return feed.id === id;
+      });
+      if (feed) {
+        feed.isRead = true;
+      }
+    }
+  }]);
+  return Store;
+}();
+exports.default = Store;
+},{}],"src/index.ts":[function(require,module,exports) {
 "use strict";
 
 var __importDefault = this && this.__importDefault || function (mod) {
@@ -496,20 +565,17 @@ Object.defineProperty(exports, "__esModule", {
 exports.Root = void 0;
 var router_1 = __importDefault(require("./core/router"));
 var page_1 = require("./page"); // 좋은듯
+var store_1 = __importDefault(require("./store"));
 exports.Root = document.getElementById("root");
-var store = {
-  currentPage: 1,
-  feed: []
-};
-window.store = store;
+var store = new store_1.default();
 var router = new router_1.default();
-var newsFeedView = new page_1.NewsFeedView("root");
-var newsDetailView = new page_1.NewsDetailView("root");
+var newsFeedView = new page_1.NewsFeedView("root", store);
+var newsDetailView = new page_1.NewsDetailView("root", store);
 router.setDefaultPage(newsFeedView);
 router.addRouterPage("/page/", newsFeedView);
 router.addRouterPage("/show/", newsDetailView);
 router.route();
-},{"./core/router":"src/core/router.ts","./page":"src/page/index.ts"}],"../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+},{"./core/router":"src/core/router.ts","./page":"src/page/index.ts","./store":"src/store.ts"}],"../../../../usr/local/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -534,7 +600,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49689" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "49637" + '/');
   ws.onmessage = function (event) {
     checkedAssets = {};
     assetsToAccept = [];

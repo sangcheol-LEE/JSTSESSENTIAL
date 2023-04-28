@@ -1,7 +1,15 @@
 import { View } from "../core/view";
-export interface Store {
+
+export interface NewsStore {
+  getAllFeed: () => NewsFeed[];
+  getFeed: (position: number) => NewsFeed;
+  setFeed: (feeds: NewsFeed[]) => void;
+  makeRead: (id: number) => void;
+  hasFeed: boolean;
   currentPage: number;
-  feed: NewsFeed[];
+  numberOfFeed: number;
+  nextPage: number;
+  prevPage: number;
 }
 export interface News {
   readonly id: number;

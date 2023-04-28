@@ -1,10 +1,12 @@
+import { NewsStore } from "./../types/index";
 import { NewsDetailApi } from "../core/api";
 import { Comments } from "../types";
 import { DETAIL_NEWS_URL } from "../config";
 import { View } from "../core/view";
 
 export default class NewsDetailView extends View {
-  constructor(rootId: string) {
+  private store: NewsStore;
+  constructor(rootId: string, store: NewsStore) {
     const template = `
         <div class="border border-black w-screen h-screen flex justify-center items-center bg-slate-500 h-auto">
           <div class="border w-auto m-auto bg-teal-400 rounded-3xl p-5 bg-white h-5/6 overflow-auto">
@@ -20,19 +22,14 @@ export default class NewsDetailView extends View {
         </div>
       `;
     super(rootId, template);
+    this.store = store;
   }
   render() {
     const api = new NewsDetailApi(DETAIL_NEWS_URL);
     const DETAIL_NEWS = api.getSendRequestAjaxData();
-
-    for (let i = 0; window.store.feed.length; i++) {
-      if (window.store.feed[i].id === Number(DETAIL_NEWS.id)) {
-        window.store.feed[i].isRead = true;
-        break;
-      }
-    }
+    this.store.makeRead(Number(DETAIL_NEWS.id));
     this.setTemplateData("comment", this.makeComment(DETAIL_NEWS.comments));
-    this.setTemplateData("listPage", String(window.store.currentPage));
+    this.setTemplateData("listPage", String(this.store.currentPage));
     this.setTemplateData("title", DETAIL_NEWS.title);
     // this.setTemplateData("_content_", DETAIL_NEWS.content);
     this.updateView();

@@ -1,5 +1,5 @@
-import { NewsFeed } from "../../types";
-import { NewsDetail } from "../../types";
+import { NewsFeed } from "../types";
+import { NewsDetail } from "../types";
 
 export class Api {
   url: string;

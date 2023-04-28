@@ -1,13 +1,13 @@
 import { NewsFeedApi } from "../core/api";
-import { NewsFeed } from "../types";
+import { NewsStore } from "../types";
 import { NEWSFEED_MAIN_URL } from "../config";
 import { View } from "../core/view";
 
 export default class NewsfeedView extends View {
   private api: NewsFeedApi;
-  private feeds: NewsFeed[];
+  private store: NewsStore;
 
-  constructor(rootId: string) {
+  constructor(rootId: string, store: NewsStore) {
     const template: string = `
         <div class="border border-black w-screen h-screen flex justify-center items-center bg-slate-500 h-auto">
           <div class="border w-auto m-auto bg-teal-400 rounded-3xl p-5 bg-white h-5/6 overflow-auto">
@@ -23,30 +23,23 @@ export default class NewsfeedView extends View {
         </div>
       `;
     super(rootId, template);
-    this.feeds = window.store.feed;
+    this.store = store;
     this.api = new NewsFeedApi(NEWSFEED_MAIN_URL);
 
-    if (this.feeds.length === 0) {
-      this.feeds = window.store.feed = this.api.getSendRequestAjaxData();
-      this.getNewPropertyArray();
-    }
-  }
-
-  private getNewPropertyArray(): void {
-    for (let i = 0; i < this.feeds.length; i++) {
-      this.feeds[i].isRead = false;
+    if (!this.store.hasFeed) {
+      this.store.setFeed(this.api.getSendRequestAjaxData());
     }
   }
 
   render(): void {
-    window.store.currentPage = Number(location.hash.substring(7) || 1);
+    this.store.currentPage = Number(location.hash.substring(7) || 1);
     for (
-      let i = (window.store.currentPage - 1) * 10;
-      i < window.store.currentPage * 10;
+      let i = (this.store.currentPage - 1) * 10;
+      i < this.store.currentPage * 10;
       i++
     ) {
       const { isRead, id, title, comments_count, user, points, time_ago } =
-        this.feeds[i];
+        this.store.getFeed(i);
       this.addHtml(`
            <div class="text-2xl p-1 w-auto border p-3 ${
              isRead ? "bg-slate-500" : "bg-slate-300"
@@ -64,23 +57,8 @@ export default class NewsfeedView extends View {
         `);
     }
     this.setTemplateData("main_section", this.getHtml());
-    this.setTemplateData(
-      "prev_button",
-      String(
-        `${window.store.currentPage > 1 ? window.store.currentPage - 1 : 1}`
-      )
-    );
-    this.setTemplateData(
-      "next_button",
-      String(
-        `${
-          Number(Array.from(String(this.feeds.length))[0]) >
-          window.store.currentPage
-            ? window.store.currentPage + 1
-            : window.store.currentPage
-        }`
-      )
-    );
+    this.setTemplateData("prev_button", String(this.store.prevPage));
+    this.setTemplateData("next_button", String(this.store.nextPage));
 
     this.updateView();
   }
